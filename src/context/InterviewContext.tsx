@@ -79,8 +79,8 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
       }
       setConfig(activeConfig);
 
-      // Initial question tailored to candidate profile if available
-      const initialQ = adaptiveEngine.generateInitialQuestion(activeConfig);
+      // Initial question tailored to candidate profile and target job
+      const initialQ = adaptiveEngine.generateInitialQuestion(activeConfig, profile);
       setQuestions([initialQ]);
     }
   }, [profile]);
@@ -174,7 +174,8 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
           config,
           nextQNum,
           currentQ.text,
-          answerText
+          answerText,
+          profile
         );
       }
 

@@ -37,10 +37,11 @@ export async function POST(req: NextRequest) {
       candidateAnswer,
       answerDuration = 45,
       questionNumber = 1,
-      targetTotal = 15,
+      targetTotal = 5,
     } = body;
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
+    const openAiKey = process.env.OPENAI_API_KEY;
 
     let evaluation: QuestionEvaluation;
     let isComplete = false;
@@ -56,10 +57,17 @@ export async function POST(req: NextRequest) {
 
     const shouldComplete = questionNumber >= targetTotal;
 
-    if (apiKey) {
+    // -------------------------------------------------------------------------
+    // Hybrid Architecture:
+    // Tier 1: Cloud LLM (Gemini 1.5/2.0 Flash or OpenAI GPT-4o-mini if keys present)
+    // Tier 2: Real-time on-device personalized heuristic persona engine (100% offline & reliable)
+    // -------------------------------------------------------------------------
+    let aiSucceeded = false;
+
+    if (geminiKey) {
       try {
-        const aiResult = await callOpenAIForEvaluationAndNext(
-          apiKey,
+        const geminiResult = await callGeminiForEvaluationAndNext(
+          geminiKey,
           config,
           candidateProfile,
           previousQuestions,
@@ -69,12 +77,19 @@ export async function POST(req: NextRequest) {
           targetTotal,
           shouldComplete
         );
-        evaluation = aiResult.evaluation;
-        isComplete = aiResult.isComplete;
-        nextQuestionData = aiResult.nextQuestion;
+        evaluation = geminiResult.evaluation;
+        isComplete = geminiResult.isComplete;
+        nextQuestionData = geminiResult.nextQuestion;
+        aiSucceeded = true;
       } catch (e) {
-        console.warn("OpenAI API call failed or timed out, executing deterministic adaptive fallback:", e);
-        const fallback = generateFallbackEvaluationAndNext(
+        console.warn("Gemini API call failed, falling back to next tier:", e);
+      }
+    }
+
+    if (!aiSucceeded && openAiKey) {
+      try {
+        const openAiResult = await callOpenAIForEvaluationAndNext(
+          openAiKey,
           config,
           candidateProfile,
           previousQuestions,
@@ -84,11 +99,16 @@ export async function POST(req: NextRequest) {
           targetTotal,
           shouldComplete
         );
-        evaluation = fallback.evaluation;
-        isComplete = fallback.isComplete;
-        nextQuestionData = fallback.nextQuestion;
+        evaluation = openAiResult.evaluation;
+        isComplete = openAiResult.isComplete;
+        nextQuestionData = openAiResult.nextQuestion;
+        aiSucceeded = true;
+      } catch (e) {
+        console.warn("OpenAI API call failed, falling back to heuristic engine:", e);
       }
-    } else {
+    }
+
+    if (!aiSucceeded) {
       const fallback = generateFallbackEvaluationAndNext(
         config,
         candidateProfile,
@@ -114,7 +134,7 @@ export async function POST(req: NextRequest) {
       candidateAnswer,
       timestamp: new Date().toISOString(),
       answerDuration,
-      evaluation,
+      evaluation: evaluation!,
       isFollowUp: !!currentQuestion.isFollowUp,
       followUpQuestionRelationship: currentQuestion.isFollowUp ? `Follows question ${questionNumber - 1}` : undefined,
     };
@@ -145,7 +165,115 @@ export async function POST(req: NextRequest) {
 }
 
 // ---------------------------------------------------------------------------
-// OpenAI Server-side Caller
+// Helper: Candidate Profile Context Formatter
+// ---------------------------------------------------------------------------
+function buildCandidateContext(config: InterviewConfig, profile: CandidateProfile | null) {
+  return {
+    targetRole: config.targetRole,
+    targetCompany: config.company || config.companyType,
+    difficulty: config.difficulty,
+    moduleFocus: config.moduleTopic || "Standard Stream",
+    practicePrompt: config.practicePrompt || null,
+    candidateName: profile?.fullName || "Candidate",
+    degree: profile?.education?.degree || "Engineering / Science",
+    institution: profile?.education?.institution || "University",
+    skills: profile?.skills?.map((s) => `${s.name} (${s.proficiency})`) || [],
+    projects: profile?.projects?.map((p) => ({
+      name: p.name,
+      tech: p.technologies,
+      contribution: p.candidateContribution,
+      problem: p.problemStatement,
+      challenges: p.challenges,
+      results: p.results,
+    })) || [],
+    experience: profile?.experience?.map((e) => `${e.position} at ${e.organization}`) || [],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Tier 1A: Google Gemini API Caller
+// ---------------------------------------------------------------------------
+async function callGeminiForEvaluationAndNext(
+  apiKey: string,
+  config: InterviewConfig,
+  profile: CandidateProfile | null,
+  previousQuestions: RecordedQuestion[],
+  currentQuestion: { text: string; questionType?: QuestionType; difficulty?: Difficulty; questionNumber: number },
+  candidateAnswer: string,
+  questionNumber: number,
+  targetTotal: number,
+  shouldComplete: boolean
+) {
+  const context = buildCandidateContext(config, profile);
+  const prompt = `You are an expert AI interviewer at PrepPilot conducting a mock interview for the role "${config.targetRole}" at "${context.targetCompany}".
+Difficulty level: ${config.difficulty}. Target Total Questions: ${targetTotal}. Current Question: #${questionNumber}.
+
+CANDIDATE CONTEXT:
+${JSON.stringify(context, null, 2)}
+
+QUESTION ASKED: "${currentQuestion.text}"
+CANDIDATE ANSWER: "${candidateAnswer}"
+
+PREVIOUS Q&A:
+${JSON.stringify(previousQuestions.slice(-2).map((q) => ({ q: q.question, a: q.candidateAnswer })), null, 2)}
+
+INSTRUCTIONS:
+1. Evaluate the candidate's answer based on STAR methodology, technical correctness, clarity, and relevance (scores 0-10).
+2. If shouldComplete is true or questionNumber >= ${targetTotal}, mark "isComplete": true and "nextQuestion": null.
+3. Otherwise, formulate the next adaptive question specifically tailored to their background, target job ("${config.targetRole}"), and their previous answers. If they mentioned specific tools or projects, probe deeper.
+4. Output strictly valid JSON matching this schema:
+{
+  "evaluation": {
+    "score": number,
+    "technicalCorrectness": number,
+    "relevance": number,
+    "clarity": number,
+    "structure": number,
+    "conciseness": number,
+    "confidenceIndicators": string,
+    "strengths": string[],
+    "weaknesses": string[],
+    "missingInformation": string[],
+    "feedback": string
+  },
+  "isComplete": boolean,
+  "nextQuestion": {
+    "text": string,
+    "questionType": string,
+    "difficulty": string,
+    "category": string,
+    "isFollowUp": boolean,
+    "followUpQuestionRelationship": string,
+    "yesNoOptions": boolean
+  } or null
+}`;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          response_mime_type: "application/json",
+          temperature: 0.4,
+        },
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Gemini API returned status ${res.status}`);
+  }
+
+  const data = await res.json();
+  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  return JSON.parse(rawText);
+}
+
+// ---------------------------------------------------------------------------
+// Tier 1B: OpenAI API Caller
 // ---------------------------------------------------------------------------
 async function callOpenAIForEvaluationAndNext(
   apiKey: string,
@@ -158,81 +286,30 @@ async function callOpenAIForEvaluationAndNext(
   targetTotal: number,
   shouldComplete: boolean
 ) {
-  const profileSummary = profile
-    ? {
-        name: profile.fullName,
-        degree: profile.education?.degree,
-        skills: profile.skills?.map((s) => `${s.name} (${s.proficiency})`),
-        projects: profile.projects?.map((p) => ({
-          name: p.name,
-          tech: p.technologies,
-          contribution: p.candidateContribution,
-          problem: p.problemStatement,
-          challenges: p.challenges,
-        })),
-        experience: profile.experience?.map((e) => `${e.position} at ${e.organization}`),
-      }
-    : "No detailed profile found; use role context only.";
-
-  const recentHistory = previousQuestions.slice(-3).map((q) => ({
-    q: q.question,
-    type: q.questionType,
-    a: q.candidateAnswer.slice(0, 150),
-    score: q.evaluation.score,
-  }));
+  const context = buildCandidateContext(config, profile);
 
   const systemPrompt = `You are an elite, adaptive technical and behavioral interviewer at PrepPilot.
-You are interviewing for role: "${config.targetRole}" at company "${config.company || config.companyType}" (${config.companyType}).
-Configured difficulty: "${config.difficulty}".
-Target total questions: ~${targetTotal}. Current question number: ${questionNumber}.
-
-CANDIDATE STORED PROFILE:
-${JSON.stringify(profileSummary, null, 2)}
-
-GUIDELINES:
-1. Candidate-specific: Strictly use the candidate's actual projects (e.g. ESP32, React, Node.js) and skills. DO NOT invent unlisted projects.
-2. Question mix: We need a realistic blend across ~15 questions:
-   - Technical questions
-   - Project questions (referencing their specific projects)
-   - Candidate-specific questions
-   - Behavioral questions
-   - Situational questions
-   - Role-specific questions
-   - Company-oriented questions
-   - Problem-solving questions
-   - Short-answer questions
-   - 2-4 Yes/No questions throughout the interview.
-   If candidate answered a Yes/No question, your follow-up should delve into their answer (e.g. Yes -> "Tell me how...", No -> alternative approach).
-3. Difficulty:
-   - If "Easy": fundamental, straightforward wording.
-   - If "Medium": practical fundamentals and standard trade-offs.
-   - If "Hard": deep systems, architectural trade-offs, scale, failure modes.
-   - If "Adaptive": increase difficulty if candidate score >= 7.5; maintain or ease if struggling (< 6.0).
-4. Evaluate candidate's latest answer honestly across technical correctness, relevance, clarity, structure, conciseness (0-10 scale).
-5. Output ONLY a valid JSON object matching the requested schema.`;
+Interviewing for: "${config.targetRole}" at "${context.targetCompany}".
+Difficulty: "${config.difficulty}".
+CANDIDATE BACKGROUND:
+${JSON.stringify(context, null, 2)}
+Output strictly valid JSON.`;
 
   const userPrompt = `
-CURRENT QUESTION #${questionNumber}:
-"${currentQuestion.text}"
-(Type: ${currentQuestion.questionType || "general"})
+CURRENT QUESTION #${questionNumber}: "${currentQuestion.text}"
+CANDIDATE ANSWER: "${candidateAnswer}"
 
-CANDIDATE ANSWER:
-"${candidateAnswer}"
+Evaluate this answer and ${shouldComplete ? "mark interview complete." : "generate the next question tailored to their target job and background."}
 
-PREVIOUS Q&A RECENT CONTEXT:
-${JSON.stringify(recentHistory, null, 2)}
-
-Evaluate this answer and ${shouldComplete ? "mark interview complete." : "generate the next question."}
-
-Return JSON with structure:
+JSON schema:
 {
   "evaluation": {
-    "score": number (0-10),
-    "technicalCorrectness": number (0-10),
-    "relevance": number (0-10),
-    "clarity": number (0-10),
-    "structure": number (0-10),
-    "conciseness": number (0-10),
+    "score": number,
+    "technicalCorrectness": number,
+    "relevance": number,
+    "clarity": number,
+    "structure": number,
+    "conciseness": number,
     "confidenceIndicators": string,
     "strengths": string[],
     "weaknesses": string[],
@@ -269,18 +346,16 @@ Return JSON with structure:
   });
 
   if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`OpenAI API error (${response.status}): ${errText}`);
+    throw new Error(`OpenAI API error (${response.status})`);
   }
 
   const data = await response.json();
-  const parsed = JSON.parse(data.choices[0].message.content);
-  return parsed;
+  return JSON.parse(data.choices[0].message.content);
 }
 
 // ---------------------------------------------------------------------------
-// Intelligent Deterministic Fallback Engine
-// (Ensures 100% reliability, zero downtime, and complete candidate personalization)
+// Tier 2: Hybrid Real-Time Heuristic Engine
+// (100% Reliable, zero latency, personalized to candidate info, target job, and course modules)
 // ---------------------------------------------------------------------------
 function generateFallbackEvaluationAndNext(
   config: InterviewConfig,
@@ -311,9 +386,9 @@ function generateFallbackEvaluationAndNext(
   const isYesNo = currentQuestion.questionType === "yes_no" || /^(yes|no|yeah|nope|sure|never)[\s.,!]*$/i.test(ans);
   const isAffirmative = /^(yes|yeah|sure|definitely|i have|absolutely)/i.test(lowerAns);
 
-  // Score computation
+  // Dynamic STAR scoring
   let correctness = 7.0;
-  let relevance = 7.0;
+  let relevance = 7.2;
   let clarity = 7.0;
   let structure = 7.0;
   let conciseness = 7.5;
@@ -327,44 +402,55 @@ function generateFallbackEvaluationAndNext(
     clarity = 8.5;
     structure = 7.0;
     conciseness = 9.0;
-    strengths.push("Direct and unambiguous response to the screening question.");
+    strengths.push("Direct, decisive response to the screening scenario.");
   } else {
-    if (wordCount >= 30) {
-      clarity += 0.5;
-      structure += 0.5;
-      strengths.push("Provided a detailed explanation with contextual background.");
-    } else if (wordCount < 10) {
+    if (wordCount >= 35) {
+      clarity += 0.6;
+      structure += 0.6;
+      strengths.push("Provided a well-detailed explanation with practical context.");
+    } else if (wordCount < 15) {
       clarity -= 1.5;
       structure -= 1.5;
-      weaknesses.push("Answer was too brief; missed explaining rationale and specific actions.");
-      missingInfo.push("Specific technical details and quantitative results.");
+      weaknesses.push("Response was too brief; missed explaining specific steps and outcomes.");
+      missingInfo.push("Concrete actions taken and quantifiable impact.");
     }
 
-    if (lowerAns.includes("because") || lowerAns.includes("due to") || lowerAns.includes("result") || lowerAns.includes("impact")) {
-      correctness += 0.5;
+    // STAR keyword indicators
+    if (lowerAns.includes("situation") || lowerAns.includes("problem") || lowerAns.includes("task") || lowerAns.includes("goal")) {
       structure += 0.5;
-      strengths.push("Effectively explained decision rationale and cause-and-effect.");
+      strengths.push("Established the background situation and task effectively.");
+    }
+    if (lowerAns.includes("i did") || lowerAns.includes("i built") || lowerAns.includes("i implemented") || lowerAns.includes("i designed") || lowerAns.includes("action")) {
+      correctness += 0.5;
+      strengths.push("Clearly articulated individual ownership and technical actions.");
+    }
+    if (lowerAns.includes("result") || lowerAns.includes("reduced") || lowerAns.includes("increased") || lowerAns.includes("percent") || lowerAns.includes("ms") || lowerAns.includes("%")) {
+      correctness += 0.7;
+      relevance += 0.5;
+      strengths.push("Strongly quantified the outcome with concrete metrics.");
     }
 
-    if (lowerAns.includes("redis") || lowerAns.includes("cache") || lowerAns.includes("database") || lowerAns.includes("api") || lowerAns.includes("latency")) {
-      correctness += 0.8;
-      strengths.push("Demonstrated sound understanding of backend architecture and performance constraints.");
-    } else if (config.targetRole.includes("Frontend") && (lowerAns.includes("react") || lowerAns.includes("state") || lowerAns.includes("css") || lowerAns.includes("dom"))) {
-      correctness += 0.8;
-      strengths.push("Accurately discussed client-side state and rendering mechanics.");
+    // Probing domain keywords
+    if (lowerAns.includes("cache") || lowerAns.includes("redis") || lowerAns.includes("database") || lowerAns.includes("api")) {
+      correctness += 0.6;
+      strengths.push("Demonstrated practical understanding of system architecture and performance.");
+    }
+    if (lowerAns.includes("react") || lowerAns.includes("component") || lowerAns.includes("state") || lowerAns.includes("css")) {
+      correctness += 0.6;
+      strengths.push("Showed familiarity with client-side architecture and rendering mechanics.");
     }
 
-    if (wordCount > 120) {
-      conciseness -= 1.5;
-      weaknesses.push("Slightly verbose; practice focusing strictly on core problem and outcome.");
+    if (wordCount > 130) {
+      conciseness -= 1.2;
+      weaknesses.push("Slightly long-winded; aim to keep responses focused under 90 seconds.");
     }
   }
 
-  correctness = Math.min(Math.max(correctness, 3), 9.6);
-  relevance = Math.min(Math.max(relevance, 4), 9.8);
-  clarity = Math.min(Math.max(clarity, 3), 9.5);
-  structure = Math.min(Math.max(structure, 3), 9.5);
-  conciseness = Math.min(Math.max(conciseness, 3), 9.5);
+  correctness = Math.min(Math.max(correctness, 3.5), 9.6);
+  relevance = Math.min(Math.max(relevance, 4.0), 9.8);
+  clarity = Math.min(Math.max(clarity, 3.5), 9.5);
+  structure = Math.min(Math.max(structure, 3.5), 9.5);
+  conciseness = Math.min(Math.max(conciseness, 3.5), 9.5);
 
   const overallScore = Number(
     ((correctness * 0.35 + relevance * 0.25 + clarity * 0.15 + structure * 0.15 + conciseness * 0.1) || 7.2).toFixed(1)
@@ -379,11 +465,11 @@ function generateFallbackEvaluationAndNext(
     conciseness: Number(conciseness.toFixed(1)),
     confidenceIndicators:
       overallScore >= 7.5
-        ? "Confident delivery with concrete technical references."
-        : "Moderate confidence; could elaborate more firmly on tradeoffs.",
-    strengths: strengths.length > 0 ? strengths : ["Demonstrated practical awareness of the subject."],
-    weaknesses: weaknesses.length > 0 ? weaknesses : ["Consider framing responses with metrics and measurable impact."],
-    missingInformation: missingInfo.length > 0 ? missingInfo : ["Deeper discussion of alternatives considered."],
+        ? "Confident delivery with concrete professional references."
+        : "Moderate confidence; could elaborate more firmly on decision trade-offs.",
+    strengths: strengths.length > 0 ? strengths : ["Demonstrated foundational awareness of the subject."],
+    weaknesses: weaknesses.length > 0 ? weaknesses : ["Consider structuring answers explicitly with the STAR method."],
+    missingInformation: missingInfo.length > 0 ? missingInfo : ["Deeper elaboration on alternatives considered."],
     feedback: `Score: ${overallScore}/10. ${strengths[0] || ""} ${weaknesses[0] || ""}`.trim(),
   };
 
@@ -398,37 +484,30 @@ function generateFallbackEvaluationAndNext(
   // Determine active difficulty
   let activeDifficulty: Difficulty = config.difficulty || "Medium";
   if (config.difficulty === "Adaptive") {
-    if (overallScore >= 7.8) {
-      activeDifficulty = "Hard";
-    } else if (overallScore <= 5.5) {
-      activeDifficulty = "Easy";
-    } else {
-      activeDifficulty = "Medium";
-    }
+    if (overallScore >= 7.8) activeDifficulty = "Hard";
+    else if (overallScore <= 5.5) activeDifficulty = "Easy";
+    else activeDifficulty = "Medium";
   }
 
-  // Check candidate profile for project references
-  const firstProject = profile?.projects?.[0] || {
-    name: "ESP32 Bus Tracking & Payment API",
-    technologies: ["Node.js", "Redis", "ESP32", "PostgreSQL"],
-    problemStatement: "Real-time tracking API for public transport buses under high concurrency.",
-  };
+  const candidateName = profile?.fullName?.trim() || "Candidate";
+  const companyName = config.company?.trim() || config.companyType || "our engineering team";
+  const primaryProject = profile?.projects?.[0];
 
-  const companyName = config.company || config.companyType || "our engineering team";
-
-  // Check if current question was Yes/No -> generate contextual follow-up
+  // -------------------------------------------------------------------------
+  // Contextual Follow-up if current question was Yes/No
+  // -------------------------------------------------------------------------
   if (isYesNo) {
     if (isAffirmative) {
       return {
         evaluation,
         isComplete: false,
         nextQuestion: {
-          text: `Great. Tell me about how you applied that in a real scenario—what specific challenges arose and how did you resolve them?`,
-          questionType: "situational" as QuestionType,
+          text: `Great. Could you describe a specific instance where you applied that workflow? What hurdles arose and how did your contribution resolve them?`,
+          questionType: "situational",
           difficulty: activeDifficulty,
-          category: "Adaptive Follow-up",
+          category: "Adaptive Probing",
           isFollowUp: true,
-          followUpQuestionRelationship: `Direct follow-up to affirmative response on Q${questionNumber}`,
+          followUpQuestionRelationship: `Follow-up to affirmative answer on Q${questionNumber}`,
           yesNoOptions: false,
         },
       };
@@ -437,159 +516,285 @@ function generateFallbackEvaluationAndNext(
         evaluation,
         isComplete: false,
         nextQuestion: {
-          text: `Understood. When faced with a similar challenge or tool for the first time, what is your standard approach for getting up to speed quickly?`,
-          questionType: "behavioral" as QuestionType,
+          text: `Understood. When encountering an unfamiliar system or process on our team at ${companyName}, what is your standard approach for getting up to speed rapidly?`,
+          questionType: "behavioral",
           difficulty: activeDifficulty,
-          category: "Adaptive Follow-up",
+          category: "Adaptability & Learning",
           isFollowUp: true,
-          followUpQuestionRelationship: `Alternative follow-up to negative response on Q${questionNumber}`,
+          followUpQuestionRelationship: `Alternative follow-up to negative answer on Q${questionNumber}`,
           yesNoOptions: false,
         },
       };
     }
   }
 
-  // Realistic interview progression across 15 questions:
-  // Q1: Overview / Introduction
-  // Q2: Deep Dive into Candidate Project (ESP32 / Stored project)
-  // Q3: Follow-up on project bottleneck / caching
-  // Q4: Yes/No Question 1 (e.g. Git / Team PR workflow)
-  // Q5: Follow-up to Q4 or Technical Problem Solving
-  // Q6: Technical Architecture / Core role competency
-  // Q7: Database / Data Handling trade-off
-  // Q8: Company-oriented scenario (Target company context)
-  // Q9: Behavioral / Conflict or Prioritization (STAR)
-  // Q10: Yes/No Question 2 (Production incident / on-call experience)
-  // Q11: Follow-up on production debugging / resilience
-  // Q12: Situational / Agile deadline pressure
-  // Q13: Deep technical scenario / Scaling bottleneck
-  // Q14: Short-answer core technical check
-  // Q15: Closing / Reflection and career alignment
+  // -------------------------------------------------------------------------
+  // Contextual Follow-up if Candidate Answer was too brief
+  // -------------------------------------------------------------------------
+  if (wordCount < 18) {
+    return {
+      evaluation,
+      isComplete: false,
+      nextQuestion: {
+        text: `You mentioned a key point, but could you elaborate specifically on your individual action? In an interview for ${config.targetRole}, what exact steps did you take and what was the quantifiable result?`,
+        questionType: "candidate_specific",
+        difficulty: activeDifficulty,
+        category: "STAR Elaboration",
+        isFollowUp: true,
+        followUpQuestionRelationship: `Probing depth on Q${questionNumber}`,
+        yesNoOptions: false,
+      },
+    };
+  }
 
-  const questionIndex = questionNumber + 1; // target question index
+  // -------------------------------------------------------------------------
+  // Question Progression Tailored to Target Role & Candidate Info
+  // -------------------------------------------------------------------------
+  const nextQNum = questionNumber + 1;
 
-  const questionCatalog: Record<
-    number,
-    {
+  // If candidate has a declared project, Q2 & Q3 drill directly into it
+  if (nextQNum === 2 && primaryProject?.name) {
+    const tech = primaryProject.technologies?.slice(0, 2).join(" and ") || "your tech stack";
+    return {
+      evaluation,
+      isComplete: false,
+      nextQuestion: {
+        text: `In your project "${primaryProject.name}", how did you design the architecture between your components (such as ${tech}) and what trade-offs did you make?`,
+        questionType: "project",
+        difficulty: activeDifficulty,
+        category: "Candidate Project Deep Dive",
+        isFollowUp: false,
+        yesNoOptions: false,
+      },
+    };
+  }
+
+  if (nextQNum === 3 && primaryProject?.name) {
+    const challenge = primaryProject.challenges || "a major bottleneck";
+    return {
+      evaluation,
+      isComplete: false,
+      nextQuestion: {
+        text: `When addressing "${challenge}" in "${primaryProject.name}", what analytical metrics did you benchmark before and after, and what alternatives did you reject?`,
+        questionType: "candidate_specific",
+        difficulty: activeDifficulty,
+        category: "Bottleneck Analysis",
+        isFollowUp: true,
+        followUpQuestionRelationship: `Direct follow-up to project architecture`,
+        yesNoOptions: false,
+      },
+    };
+  }
+
+  // Dynamic role-specific question banks for Q4+
+  const roleQuestionBank: Record<
+    string,
+    Array<{
       text: string;
       questionType: QuestionType;
       category: string;
       isFollowUp: boolean;
       yesNoOptions?: boolean;
-    }
+    }>
   > = {
-    2: {
-      text: `In your project "${firstProject.name}", how did you design the communication between the components (such as ${firstProject.technologies.slice(0, 2).join(" and ")}) and what communication protocol did you choose?`,
-      questionType: "project",
-      category: "Candidate Project",
-      isFollowUp: false,
-    },
-    3: {
-      text: `When optimizing "${firstProject.name}", what was the most significant bottleneck or failure scenario you identified, and what trade-offs did you make to resolve it?`,
-      questionType: "candidate_specific",
-      category: "Project Deep Dive",
-      isFollowUp: true,
-    },
-    4: {
-      text: `Have you ever collaborated in a multi-developer environment using feature branches and peer pull requests?`,
-      questionType: "yes_no",
-      category: "Workflow & Tooling",
+    "Frontend Developer": [
+      {
+        text: "Have you worked with modern component performance profiling tools (like React Profiler or Lighthouse) in production?",
+        questionType: "yes_no",
+        category: "Profiling & Diagnostics",
+        isFollowUp: false,
+        yesNoOptions: true,
+      },
+      {
+        text: `For a Frontend role at ${companyName}, how would you design a global notification or modal system that is accessible (WCAG keyboard focus trap) and decouple state from presentation?`,
+        questionType: "technical",
+        category: "Component Architecture",
+        isFollowUp: false,
+      },
+      {
+        text: "How do you handle responsive caching and data revalidation between client components and server rendering?",
+        questionType: "problem_solving",
+        category: "Client-Server Boundaries",
+        isFollowUp: false,
+      },
+      {
+        text: `Why do you want to build frontend systems for ${companyName} specifically, and how do you stay current with evolving browser standards?`,
+        questionType: "company_oriented",
+        category: "Company & Culture Fit",
+        isFollowUp: false,
+      },
+    ],
+    "Backend Developer": [
+      {
+        text: "Have you ever designed and maintained idempotent endpoints for financial transactions or state transitions?",
+        questionType: "yes_no",
+        category: "API Design",
+        isFollowUp: false,
+        yesNoOptions: true,
+      },
+      {
+        text: `At ${companyName}, services need to withstand traffic spikes without cascading failures. How would you implement rate limiting, circuit breakers, and database connection pooling?`,
+        questionType: "technical",
+        category: "System Resilience",
+        isFollowUp: false,
+      },
+      {
+        text: "Between normalized relational schemas and document/cache-based stores, what criteria determine where transactional data should live?",
+        questionType: "problem_solving",
+        category: "Database Architecture",
+        isFollowUp: false,
+      },
+      {
+        text: `Tell me about a time you handled an unexpected production incident or slow database query. What was your triage protocol?`,
+        questionType: "situational",
+        category: "Production Operations",
+        isFollowUp: false,
+      },
+    ],
+    "Data Scientist": [
+      {
+        text: "Have you ever deployed a machine learning model into a production API or streaming inference pipeline?",
+        questionType: "yes_no",
+        category: "MLOps & Deployment",
+        isFollowUp: false,
+        yesNoOptions: true,
+      },
+      {
+        text: `When evaluating classification performance on highly imbalanced user data at ${companyName}, when would you prioritize Precision over Recall, and how would you tune your decision threshold?`,
+        questionType: "technical",
+        category: "Model Evaluation",
+        isFollowUp: false,
+      },
+      {
+        text: "How do you systematically detect and remediate data leakage during feature engineering on historical time-series datasets?",
+        questionType: "problem_solving",
+        category: "Feature Engineering",
+        isFollowUp: false,
+      },
+      {
+        text: `How do you present complex mathematical or statistical model predictions to non-technical business stakeholders?`,
+        questionType: "behavioral",
+        category: "Stakeholder Communication",
+        isFollowUp: false,
+      },
+    ],
+    "Data Analyst": [
+      {
+        text: "Have you ever automated an end-to-end SQL pipeline with automated data quality assertions?",
+        questionType: "yes_no",
+        category: "Data Quality",
+        isFollowUp: false,
+        yesNoOptions: true,
+      },
+      {
+        text: `If leadership at ${companyName} notices user retention dropped 8% week-over-week, walk me through your diagnostic query plan to identify the contributing cohort.`,
+        questionType: "problem_solving",
+        category: "Cohort Analysis",
+        isFollowUp: false,
+      },
+      {
+        text: "How do you design database views or dimensional schemas (star/snowflake) to optimize dashboard load times?",
+        questionType: "technical",
+        category: "Data Modeling",
+        isFollowUp: false,
+      },
+    ],
+    "UI Designer": [
+      {
+        text: "Have you conducted live moderated user usability testing sessions on interactive prototypes?",
+        questionType: "yes_no",
+        category: "User Research",
+        isFollowUp: false,
+        yesNoOptions: true,
+      },
+      {
+        text: `How do you maintain design tokens and reusable component libraries in Figma so frontend engineers at ${companyName} can implement them with zero guesswork?`,
+        questionType: "technical",
+        category: "Design Systems",
+        isFollowUp: false,
+      },
+      {
+        text: "Walk me through a design disagreement where user testing data contradicted an executive's preference. How did you resolve it?",
+        questionType: "behavioral",
+        category: "Design Advocacy",
+        isFollowUp: false,
+      },
+    ],
+    "Product Manager": [
+      {
+        text: "Have you ever defined North Star metrics and managed sprint trade-offs directly with engineering leads?",
+        questionType: "yes_no",
+        category: "Product Execution",
+        isFollowUp: false,
+        yesNoOptions: true,
+      },
+      {
+        text: `If engineering at ${companyName} reports an unexpected technical delay on a launch commitment, how do you adjust scope and communicate with leadership?`,
+        questionType: "situational",
+        category: "Roadmap Management",
+        isFollowUp: false,
+      },
+      {
+        text: "How do you distinguish between what users say they want versus what they actually need during discovery interviews?",
+        questionType: "behavioral",
+        category: "Customer Discovery",
+        isFollowUp: false,
+      },
+    ],
+    "College Lecturer": [
+      {
+        text: "Have you designed original laboratory assignments or coding rubrics for introductory technical courses?",
+        questionType: "yes_no",
+        category: "Pedagogy",
+        isFollowUp: false,
+        yesNoOptions: true,
+      },
+      {
+        text: "How do you explain abstract programming concepts (like recursion or memory pointers) to beginners who are struggling?",
+        questionType: "technical",
+        category: "Instructional Clarity",
+        isFollowUp: false,
+      },
+    ],
+  };
+
+  const pool = roleQuestionBank[config.targetRole] || roleQuestionBank["Software Developer"] || [
+    {
+      text: "Have you ever collaborated in a multi-developer environment using feature branches and peer pull requests?",
+      questionType: "yes_no" as QuestionType,
+      category: "Workflow & Collaboration",
       isFollowUp: false,
       yesNoOptions: true,
     },
-    5: {
-      text: `Can you walk me through an example of a technical disagreement during a code review or architecture discussion, and how you reached alignment?`,
-      questionType: "behavioral",
-      category: "Collaboration & Conflict",
+    {
+      text: `For a ${config.targetRole} role at ${companyName}, how would you ensure that your code remains testable and scalable under tight release deadlines?`,
+      questionType: "technical" as QuestionType,
+      category: "Engineering Quality",
       isFollowUp: false,
     },
-    6: {
-      text: `For a ${config.targetRole} role at ${companyName}, how would you ensure that your services maintain sub-100ms response times under unexpected traffic spikes?`,
-      questionType: "technical",
-      category: "System Architecture",
+    {
+      text: `Can you walk me through an example of a technical disagreement during an architectural discussion, and how you reached alignment?`,
+      questionType: "behavioral" as QuestionType,
+      category: "Conflict Resolution",
       isFollowUp: false,
     },
-    7: {
-      text: `Between normalized relational schemas and document/cache-based stores, how do you decide where persistent transactional state should live?`,
-      questionType: "problem_solving",
-      category: "Data Modeling & Storage",
-      isFollowUp: false,
-    },
-    8: {
-      text: `Why are you interested in joining ${companyName} specifically, and how do your technical background and career goals align with our team's mission?`,
-      questionType: "company_oriented",
+    {
+      text: `Why are you interested in joining ${companyName} specifically, and how do your background and career goals align with our team's mission?`,
+      questionType: "company_oriented" as QuestionType,
       category: "Company Alignment",
       isFollowUp: false,
     },
-    9: {
-      text: `Tell me about a time you made a technical mistake or introduced a bug that impacted users or tests. How did you catch it and what did you learn?`,
-      questionType: "situational",
-      category: "Ownership & Accountability",
-      isFollowUp: false,
-    },
-    10: {
-      text: `Have you ever worked directly with production monitoring, structured logging, or alerting systems?`,
-      questionType: "yes_no",
-      category: "Observability",
-      isFollowUp: false,
-      yesNoOptions: true,
-    },
-    11: {
-      text: `When diagnosing an intermittent production issue where logs are sparse, what is your step-by-step troubleshooting methodology?`,
-      questionType: "situational",
-      category: "Problem Solving",
-      isFollowUp: true,
-    },
-    12: {
-      text: `Imagine you are assigned two high-priority deliverables due on the same day with tight deadlines. How do you communicate with stakeholders and prioritize?`,
-      questionType: "behavioral",
-      category: "Prioritization & Delivery",
-      isFollowUp: false,
-    },
-    13: {
-      text: `In system design, how would you design idempotent API endpoints to prevent duplicate payments or operations on network retries?`,
-      questionType: "technical",
-      category: "Advanced Technical",
-      isFollowUp: false,
-    },
-    14: {
-      text: `In 1 or 2 sentences: What is the primary difference between horizontal and vertical scaling, and when does vertical scaling fail?`,
-      questionType: "short_answer",
-      category: "Quick Technical Check",
-      isFollowUp: false,
-    },
-    15: {
-      text: `Looking back at your preparation for this ${config.targetRole} interview, what area do you feel you have mastered best, and what area are you currently working hardest to improve?`,
-      questionType: "candidate_specific",
-      category: "Self Reflection",
-      isFollowUp: false,
-    },
-  };
+  ];
 
-  const nextQ: {
-    text: string;
-    questionType: QuestionType;
-    category: string;
-    isFollowUp: boolean;
-    yesNoOptions?: boolean;
-  } = questionCatalog[questionIndex] || {
-    text: `Could you share an example of how you apply testing and continuous integration to ensure high code quality in ${config.targetRole} tasks?`,
-    questionType: "technical",
-    category: "Quality Engineering",
-    isFollowUp: false,
-  };
+  const questionIdx = (nextQNum - 2) % pool.length;
+  const chosenQuestion = pool[questionIdx];
 
   return {
     evaluation,
     isComplete: false,
     nextQuestion: {
-      text: nextQ.text,
-      questionType: nextQ.questionType,
+      ...chosenQuestion,
       difficulty: activeDifficulty,
-      category: nextQ.category,
-      isFollowUp: nextQ.isFollowUp,
-      followUpQuestionRelationship: nextQ.isFollowUp ? `Follows question ${questionNumber}` : undefined,
-      yesNoOptions: !!nextQ.yesNoOptions,
     },
   };
 }

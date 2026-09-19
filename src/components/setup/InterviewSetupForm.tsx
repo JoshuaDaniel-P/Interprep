@@ -19,10 +19,14 @@ import { useAuth } from "@/context/AuthContext";
 
 const roleOptions: OptionItem<TargetRole>[] = [
   { value: "Software Engineer", label: "Software Engineer", description: "System design, full-stack & problem solving" },
+  { value: "Software Developer", label: "Software Developer", description: "Application programming, data structures & APIs" },
   { value: "Frontend Developer", label: "Frontend Developer", description: "React, browser APIs, state & performance" },
   { value: "Backend Developer", label: "Backend Developer", description: "REST/GraphQL, microservices, databases & queues" },
+  { value: "Data Scientist", label: "Data Scientist", description: "Machine learning, feature engineering & model evaluation" },
   { value: "Data Analyst", label: "Data Analyst", description: "SQL pipelines, analytics & business metrics" },
+  { value: "UI Designer", label: "UI/UX Designer", description: "Design systems, user research, wireframes & WCAG" },
   { value: "Product Manager", label: "Product Manager", description: "Product discovery, execution & trade-offs" },
+  { value: "College Lecturer", label: "College Lecturer", description: "Curriculum delivery, pedagogical clarity & concepts" },
   { value: "Marketing", label: "Marketing", description: "Growth funnels, campaigns & acquisition metrics" },
   { value: "Sales", label: "Sales", description: "Discovery calls, objection handling & closing" },
 ];

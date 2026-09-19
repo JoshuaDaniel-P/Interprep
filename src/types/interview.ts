@@ -65,6 +65,10 @@ export interface InterviewConfig {
   difficulty: Difficulty;
   questionCount?: number;
   targetQuestionsCount?: number;
+  moduleTopic?: string;
+  courseTrack?: string;
+  practicePrompt?: string;
+  keyTopics?: string[];
 }
 
 export interface QuestionEvaluation {

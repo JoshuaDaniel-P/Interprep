@@ -2,13 +2,15 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { courseService } from "@/services/course.service";
 import { TargetRoleTrack } from "@/types/candidate";
-import { BookOpen, CheckCircle, PlayCircle, Lightbulb, ArrowLeft } from "lucide-react";
+import { InterviewConfig, TargetRole } from "@/types/interview";
+import { BookOpen, CheckCircle, PlayCircle, Lightbulb, ArrowLeft, Rocket } from "lucide-react";
 
 interface CourseDetailPageProps {
   params: {
@@ -20,6 +22,7 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
   const roleTrack = decodeURIComponent(params.roleId) as TargetRoleTrack;
   const course = courseService.getCourseForRole(roleTrack);
 
+  const router = useRouter();
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(["l-101"]);
   const [activeLessonId, setActiveLessonId] = useState<string>("l-101");
 
@@ -38,6 +41,30 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
     }
   };
 
+  const handlePracticeTopic = (lesson = activeLesson) => {
+    if (!lesson) return;
+    const targetRole = (course.roleTrack === "Software Developer" ? "Software Engineer" : course.roleTrack) as TargetRole;
+    const moduleConfig: InterviewConfig = {
+      targetRole,
+      companyType: "Product Company",
+      company: "Tech Corp",
+      experienceLevel: "2–5 years",
+      interviewType: "Mixed",
+      mode: "Text",
+      difficulty: "Adaptive",
+      questionCount: 4,
+      targetQuestionsCount: 4,
+      courseTrack: course.roleTrack,
+      moduleTopic: lesson.title,
+      practicePrompt: lesson.practicePrompt,
+      keyTopics: lesson.keyTopics,
+    };
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("preppilot_active_config", JSON.stringify(moduleConfig));
+    }
+    router.push("/interview");
+  };
+
   return (
     <AppShell>
       <div className="space-y-6 max-w-5xl mx-auto">
@@ -53,12 +80,10 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
             <p className="text-sm text-slate-500 mt-1">{course.tagline}</p>
           </div>
 
-          <Link href="/setup">
-            <Button size="lg" className="gap-2 shrink-0">
-              <PlayCircle className="w-5 h-5" />
-              Practice Mock Interview
-            </Button>
-          </Link>
+          <Button size="lg" className="gap-2 shrink-0" onClick={() => handlePracticeTopic(activeLesson)}>
+            <PlayCircle className="w-5 h-5" />
+            Practice Mock Interview
+          </Button>
         </div>
 
         {/* Progress Card */}
@@ -180,11 +205,10 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
                       {completedLessonIds.includes(activeLesson.id) ? "Mark Incomplete" : "Mark Completed"}
                     </Button>
 
-                    <Link href="/setup">
-                      <Button variant="outline" className="gap-2">
-                        Practice This Topic
-                      </Button>
-                    </Link>
+                    <Button variant="outline" className="gap-2 bg-brand-50/80 text-brand-700 border-brand-200 hover:bg-brand-100" onClick={() => handlePracticeTopic(activeLesson)}>
+                      <Rocket className="w-4 h-4 text-brand-600" />
+                      Practice This Topic
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
