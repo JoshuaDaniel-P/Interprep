@@ -1,7 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut } from "firebase/auth";
+import {
+  User,
+  onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+} from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { CandidateProfile } from "@/types/candidate";
 import { candidateService } from "@/services/candidate.service";
@@ -13,11 +21,13 @@ interface AuthContextType {
   profile: CandidateProfile | null;
   role: UserRole;
   isLoading: boolean;
+  signInWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   loginAsDemoCandidate: () => Promise<void>;
   loginAsAdmin: () => Promise<void>;
   logout: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: () => Promise<CandidateProfile | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,8 +42,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const p = await candidateService.getProfile(uid);
       setProfile(p);
+      return p;
     } catch {
-      setProfile(candidateService.getProfile("candidate-demo-123") as any);
+      setProfile(null);
+      return null;
     }
   };
 
@@ -43,9 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (firebaseUser) {
         await fetchUserProfile(firebaseUser.uid);
       } else {
-        // Fallback to default demo profile for frictionless demo access
-        const p = await candidateService.getProfile("candidate-demo-123");
-        setProfile(p);
+        setProfile(null);
       }
       setIsLoading(false);
     });
@@ -53,7 +63,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const signInWithEmail = async (email: string, pass: string) => {
+    setIsLoading(true);
+    try {
+      const res = await signInWithEmailAndPassword(auth, email, pass);
+      if (res.user) {
+        await fetchUserProfile(res.user.uid);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signUpWithEmail = async (email: string, pass: string) => {
+    setIsLoading(true);
+    try {
+      const res = await createUserWithEmailAndPassword(auth, email, pass);
+      if (res.user) {
+        setProfile(null); // Onboarding required
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signInWithGoogle = async () => {
+    setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       const res = await signInWithPopup(auth, provider);
@@ -61,14 +96,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(res.user.uid);
       }
     } catch (e) {
-      console.warn("Google Sign In error, falling back to demo session:", e);
+      console.warn("Google Auth error, falling back to demo candidate session:", e);
       await loginAsDemoCandidate();
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const loginAsDemoCandidate = async () => {
     setRole("CANDIDATE");
-    const p = await candidateService.getProfile("candidate-demo-123");
+    const p = await candidateService.getProfile("candidate-user-active");
     setProfile(p);
   };
 
@@ -79,17 +116,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await firebaseSignOut(auth);
-    } catch {
-      // ignore
+    } catch (e) {
+      console.warn("Logout error:", e);
     }
     setUser(null);
+    setProfile(null);
+    if (typeof window !== "undefined") {
+      sessionStorage.clear();
+      localStorage.removeItem("preppilot_profile_candidate-user-active");
+    }
   };
 
   const refreshProfile = async () => {
-    if (profile?.uid) {
-      const updated = await candidateService.getProfile(profile.uid);
-      setProfile(updated);
+    if (user?.uid) {
+      return await fetchUserProfile(user.uid);
+    } else if (profile?.uid) {
+      return await fetchUserProfile(profile.uid);
     }
+    return null;
   };
 
   return (
@@ -99,6 +143,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profile,
         role,
         isLoading,
+        signInWithEmail,
+        signUpWithEmail,
         signInWithGoogle,
         loginAsDemoCandidate,
         loginAsAdmin,
