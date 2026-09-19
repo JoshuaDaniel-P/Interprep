@@ -109,12 +109,32 @@ export default function DashboardPage() {
         const totalSc = scored.reduce((acc, sess) => acc + (sess.score || 0), 0);
         const avgSc = scored.length > 0 ? Number((totalSc / scored.length).toFixed(1)) : m.averageScore;
 
+        const realTrend = scored
+          .slice(0, 6)
+          .reverse()
+          .map((sess) => ({
+            date: new Date(sess.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            score: sess.score || 7.0,
+          }));
+
+        const latestRec =
+          userSessions[0]?.evaluation?.recommendations?.[0] ||
+          userSessions[0]?.improvements?.[0] ||
+          m.topRecommendation;
+
         setMetrics({
           ...m,
           interviewsCompleted: scored.length,
           averageScore: avgSc,
+          scoreTrend: realTrend.length > 0 ? realTrend : m.scoreTrend,
+          topRecommendation: latestRec,
         });
-        setSkills(s);
+
+        if (userSessions[0]?.evaluation?.skills) {
+          setSkills(userSessions[0].evaluation.skills);
+        } else {
+          setSkills(s);
+        }
       } catch (err) {
         console.warn("Dashboard data load error:", err);
       } finally {

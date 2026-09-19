@@ -8,6 +8,14 @@ import {
   persistentMultipleTabManager,
 } from "firebase/firestore";
 
+const rawApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+export const isFirebaseConfigured = Boolean(
+  rawApiKey &&
+  rawApiKey !== "demo-api-key" &&
+  !rawApiKey.includes("demo") &&
+  rawApiKey.length > 10
+);
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "demo-api-key",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "preppilot-demo.firebaseapp.com",

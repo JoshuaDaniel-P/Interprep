@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { CandidateProfile, TargetRoleTrack } from "@/types/candidate";
 import { calculateReadiness } from "./gapAnalysis.service";
 
@@ -65,21 +65,28 @@ export class CandidateService {
         }
       }
 
-      const ref = doc(db, "users", uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const data = snap.data() as CandidateProfile;
-        if (typeof window !== "undefined") {
-          localStorage.setItem(`preppilot_profile_${uid}`, JSON.stringify(data));
+      if (isFirebaseConfigured) {
+        const ref = doc(db, "users", uid);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const data = snap.data() as CandidateProfile;
+          if (typeof window !== "undefined") {
+            localStorage.setItem(`preppilot_profile_${uid}`, JSON.stringify(data));
+          }
+          return data;
         }
-        return data;
       }
     } catch (e) {
       console.warn("Firestore fetch error, falling back to local cache:", e);
     }
 
-    if (uid === "candidate-demo-123") {
-      return defaultMockCandidateProfile;
+    if (
+      uid === "candidate-demo-123" ||
+      uid === "candidate-user-active" ||
+      uid === "google-candidate-123" ||
+      !uid
+    ) {
+      return { ...defaultMockCandidateProfile, uid: uid || "candidate-demo-123" };
     }
 
     return {
@@ -127,11 +134,13 @@ export class CandidateService {
       localStorage.setItem(`preppilot_profile_${profile.uid}`, JSON.stringify(updatedProfile));
     }
 
-    try {
-      const ref = doc(db, "users", profile.uid);
-      await setDoc(ref, updatedProfile, { merge: true });
-    } catch (e) {
-      console.warn("Firestore save error (stored locally):", e);
+    if (isFirebaseConfigured) {
+      try {
+        const ref = doc(db, "users", profile.uid);
+        await setDoc(ref, updatedProfile, { merge: true });
+      } catch (e) {
+        console.warn("Firestore save error (stored locally):", e);
+      }
     }
   }
 

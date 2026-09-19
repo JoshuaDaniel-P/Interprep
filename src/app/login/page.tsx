@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { isFirebaseConfigured } from "@/lib/firebase";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Sparkles, Mail, Lock, UserCheck, AlertCircle } from "lucide-react";
+import { Sparkles, Mail, Lock, UserCheck, AlertCircle, Info } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -103,6 +104,18 @@ export default function LoginPage() {
           </CardHeader>
 
           <CardContent className="p-6 space-y-4">
+            {!isFirebaseConfigured && (
+              <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200 text-blue-900 text-xs flex items-start gap-2.5">
+                <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <p className="font-semibold text-blue-900">Zero-Config Mode Active</p>
+                  <p className="text-blue-700 leading-relaxed">
+                    Database credentials are not required. You can sign in with any email, click Google, or use Quick Demo Access.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {errorMessage && (
               <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />

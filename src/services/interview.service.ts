@@ -7,7 +7,7 @@ import {
   where,
   setDoc,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, isFirebaseConfigured } from "@/lib/firebase";
 import {
   InterviewSession,
   InterviewConfig,
@@ -47,9 +47,9 @@ export class InterviewService implements IInterviewService {
       }
     }
 
-    // 2. Fetch from Firestore
-    try {
-      if (userId) {
+    // 2. Fetch from Firestore if configured
+    if (isFirebaseConfigured && userId) {
+      try {
         const sessionsRef = collection(db, "users", userId, "sessions");
         const snap = await getDocs(sessionsRef);
         if (!snap.empty) {
@@ -61,9 +61,9 @@ export class InterviewService implements IInterviewService {
           }
           return remoteSessions;
         }
+      } catch (e) {
+        console.warn("Firestore fetch recent interviews error (using local):", e);
       }
-    } catch (e) {
-      console.warn("Firestore fetch recent interviews error (using local):", e);
     }
 
     if (localSessions.length > 0) {
@@ -102,28 +102,30 @@ export class InterviewService implements IInterviewService {
       }
     }
 
-    // 2. Check Firestore
-    try {
-      if (userId) {
-        const ref = doc(db, "users", userId, "sessions", id);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          return snap.data() as InterviewSession;
+    // 2. Check Firestore if configured
+    if (isFirebaseConfigured) {
+      try {
+        if (userId) {
+          const ref = doc(db, "users", userId, "sessions", id);
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            return snap.data() as InterviewSession;
+          }
         }
-      }
 
-      const globalRef = doc(db, "interview_sessions", id);
-      const globalSnap = await getDoc(globalRef);
-      if (globalSnap.exists()) {
-        return globalSnap.data() as InterviewSession;
-      }
+        const globalRef = doc(db, "interview_sessions", id);
+        const globalSnap = await getDoc(globalRef);
+        if (globalSnap.exists()) {
+          return globalSnap.data() as InterviewSession;
+        }
 
-      const interviewSnap = await getDoc(doc(db, "interviews", id));
-      if (interviewSnap.exists()) {
-        return interviewSnap.data() as StoredInterviewRecord;
+        const interviewSnap = await getDoc(doc(db, "interviews", id));
+        if (interviewSnap.exists()) {
+          return interviewSnap.data() as StoredInterviewRecord;
+        }
+      } catch (e) {
+        console.warn("Firestore getInterviewById error:", e);
       }
-    } catch (e) {
-      console.warn("Firestore getInterviewById error:", e);
     }
 
     const mock = mockRecentInterviews.find((s) => s.id === id);
@@ -138,6 +140,11 @@ export class InterviewService implements IInterviewService {
           return JSON.parse(activeEvalStr);
         }
 
+        const localEvalStr = localStorage.getItem(`preppilot_eval_${sessionId}`);
+        if (localEvalStr) {
+          return JSON.parse(localEvalStr);
+        }
+
         const activeSessionStr = sessionStorage.getItem("preppilot_completed_session");
         if (activeSessionStr) {
           const activeSession = JSON.parse(activeSessionStr) as InterviewSession;
@@ -145,22 +152,35 @@ export class InterviewService implements IInterviewService {
             return activeSession.evaluation;
           }
         }
+
+        const activeEval = sessionStorage.getItem("preppilot_active_evaluation");
+        if (activeEval) {
+          return JSON.parse(activeEval);
+        }
       } catch (e) {
         console.warn("Session storage lookup for evaluation error:", e);
       }
     }
 
-    try {
-      const evalRef = doc(db, "evaluations", sessionId);
-      const evalSnap = await getDoc(evalRef);
-      if (evalSnap.exists()) {
-        return evalSnap.data() as Evaluation;
+    if (isFirebaseConfigured) {
+      try {
+        const evalRef = doc(db, "evaluations", sessionId);
+        const evalSnap = await getDoc(evalRef);
+        if (evalSnap.exists()) {
+          return evalSnap.data() as Evaluation;
+        }
+      } catch (e) {
+        console.warn("Firestore getEvaluation error:", e);
       }
-    } catch (e) {
-      console.warn("Firestore getEvaluation error:", e);
     }
 
-    return mockEvaluationDetails[sessionId] || mockEvaluationDetails["session-101"] || null;
+    if (mockEvaluationDetails[sessionId]) {
+      return mockEvaluationDetails[sessionId];
+    }
+    if (sessionId === "session-101") {
+      return mockEvaluationDetails["session-101"];
+    }
+    return null;
   }
 
   async saveCompletedSession(
@@ -177,10 +197,14 @@ export class InterviewService implements IInterviewService {
 
     if (typeof window !== "undefined") {
       sessionStorage.setItem("preppilot_completed_session", JSON.stringify(sessionWithEval));
+      sessionStorage.setItem("preppilot_active_evaluation", JSON.stringify(evaluation));
       sessionStorage.setItem(`preppilot_eval_${session.id}`, JSON.stringify(evaluation));
 
       const cacheKey = userId ? `preppilot_sessions_${userId}` : "preppilot_sessions_all";
       try {
+        localStorage.setItem(`preppilot_eval_${session.id}`, JSON.stringify(evaluation));
+        localStorage.setItem("preppilot_last_completed_session", JSON.stringify(sessionWithEval));
+
         const existingStr = localStorage.getItem(cacheKey);
         const existing: InterviewSession[] = existingStr ? JSON.parse(existingStr) : [];
         const updated = [sessionWithEval, ...existing.filter((s) => s.id !== session.id)];
@@ -190,19 +214,21 @@ export class InterviewService implements IInterviewService {
       }
     }
 
-    try {
-      if (userId) {
-        const userSessionRef = doc(db, "users", userId, "sessions", session.id);
-        await setDoc(userSessionRef, sessionWithEval, { merge: true });
+    if (isFirebaseConfigured) {
+      try {
+        if (userId) {
+          const userSessionRef = doc(db, "users", userId, "sessions", session.id);
+          await setDoc(userSessionRef, sessionWithEval, { merge: true });
+        }
+
+        const globalSessionRef = doc(db, "interview_sessions", session.id);
+        await setDoc(globalSessionRef, sessionWithEval, { merge: true });
+
+        const evalRef = doc(db, "evaluations", session.id);
+        await setDoc(evalRef, evaluation, { merge: true });
+      } catch (e) {
+        console.warn("Firestore interview session save error (stored locally):", e);
       }
-
-      const globalSessionRef = doc(db, "interview_sessions", session.id);
-      await setDoc(globalSessionRef, sessionWithEval, { merge: true });
-
-      const evalRef = doc(db, "evaluations", session.id);
-      await setDoc(evalRef, evaluation, { merge: true });
-    } catch (e) {
-      console.warn("Firestore interview session save error (stored locally):", e);
     }
   }
 
@@ -218,10 +244,12 @@ export class InterviewService implements IInterviewService {
       }
     }
 
-    try {
-      await setDoc(doc(db, "interviews", record.id), record, { merge: true });
-    } catch (e) {
-      console.warn("Firestore interview record save error:", e);
+    if (isFirebaseConfigured) {
+      try {
+        await setDoc(doc(db, "interviews", record.id), record, { merge: true });
+      } catch (e) {
+        console.warn("Firestore interview record save error:", e);
+      }
     }
   }
 

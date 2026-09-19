@@ -45,38 +45,64 @@ function ResultsContent() {
     async function loadResults() {
       setIsLoading(true);
       try {
-        // 1. Try session storage first
+        let loadedEval: Evaluation | null = null;
+        let loadedSession: InterviewSession | StoredInterviewRecord | null = null;
+
+        // 1. Try session/local storage first with sessionId
         if (typeof window !== "undefined") {
-          const activeEvalStr = sessionStorage.getItem("preppilot_active_evaluation");
-          const activeSessionStr = sessionStorage.getItem("preppilot_completed_session");
-          if (activeEvalStr) {
+          const evalKey = `preppilot_eval_${sessionId}`;
+          const specificEvalStr = sessionStorage.getItem(evalKey) || localStorage.getItem(evalKey);
+          if (specificEvalStr) {
             try {
-              setEvaluation(JSON.parse(activeEvalStr));
+              loadedEval = JSON.parse(specificEvalStr);
             } catch {}
           }
+
+          const activeEvalStr = sessionStorage.getItem("preppilot_active_evaluation");
+          if (!loadedEval && activeEvalStr) {
+            try {
+              loadedEval = JSON.parse(activeEvalStr);
+            } catch {}
+          }
+
+          const activeSessionStr =
+            sessionStorage.getItem("preppilot_completed_session") ||
+            localStorage.getItem("preppilot_last_completed_session");
           if (activeSessionStr) {
             try {
               const parsed = JSON.parse(activeSessionStr);
+              loadedSession = parsed;
               setSessionRecord(parsed);
+              if (!loadedEval && parsed.evaluation) {
+                loadedEval = parsed.evaluation;
+              }
             } catch {}
           }
         }
 
-        // 2. Load from service (Firestore or mock)
+        // 2. Load from service (Firestore or cached)
         const [evalResult, sessionResult] = await Promise.all([
           interviewService.getEvaluation(sessionId).catch(() => null),
           interviewService.getInterviewById(sessionId).catch(() => null),
         ]);
 
         if (evalResult) {
-          setEvaluation((prev) => prev || evalResult);
-        } else if (!evaluation) {
-          // Fallback mock if nothing else
-          setEvaluation(mockEvaluationDetails[sessionId] || mockEvaluationDetails["session-101"]);
+          loadedEval = evalResult;
+        }
+        if (sessionResult) {
+          loadedSession = sessionResult;
         }
 
-        if (sessionResult) {
-          setSession(sessionResult);
+        // 3. Fallback mock ONLY if sessionId is explicitly mock session-101 and no real eval exists
+        if (!loadedEval && (sessionId === "session-101" || mockEvaluationDetails[sessionId])) {
+          loadedEval = mockEvaluationDetails[sessionId] || mockEvaluationDetails["session-101"];
+        }
+
+        if (loadedEval) {
+          setEvaluation(loadedEval);
+        }
+        if (loadedSession) {
+          setSession(loadedSession);
         }
       } catch (err) {
         console.warn("Failed to load evaluation details:", err);
@@ -123,47 +149,49 @@ function ResultsContent() {
     (session as InterviewSession)?.recordedQuestions ||
     [];
 
+  const overallPct = evaluation ? Math.round(evaluation.overallScore * 10) : 50;
+
   // 7 Core Categories
   const categories = [
     {
       label: "Technical Knowledge",
-      score: evaluation.categoryScores?.technicalKnowledge ?? 75,
+      score: evaluation.categoryScores?.technicalKnowledge ?? overallPct,
       icon: Code2,
       desc: "Core domain logic, data models, language runtime, and API patterns.",
     },
     {
       label: "Problem Solving",
-      score: evaluation.categoryScores?.problemSolving ?? 72,
+      score: evaluation.categoryScores?.problemSolving ?? overallPct,
       icon: Brain,
       desc: "System decomposition, edge-case consideration, and debugging reasoning.",
     },
     {
       label: "Projects & Architecture",
-      score: evaluation.categoryScores?.projects ?? 80,
+      score: evaluation.categoryScores?.projects ?? overallPct,
       icon: FolderGit2,
       desc: "Depth in discussing owned projects, tradeoffs, and scaling decisions.",
     },
     {
       label: "Communication",
-      score: evaluation.categoryScores?.communication ?? 68,
+      score: evaluation.categoryScores?.communication ?? overallPct,
       icon: MessageSquare,
       desc: "Clarity, concise explanations, and terminology precision.",
     },
     {
       label: "Behavioral & STAR",
-      score: evaluation.categoryScores?.behavioral ?? 74,
+      score: evaluation.categoryScores?.behavioral ?? overallPct,
       icon: Users,
       desc: "Teamwork, conflict resolution, ownership, and structured STAR answers.",
     },
     {
       label: "Role Knowledge",
-      score: evaluation.categoryScores?.roleKnowledge ?? 76,
+      score: evaluation.categoryScores?.roleKnowledge ?? overallPct,
       icon: Briefcase,
       desc: "Awareness of day-to-day responsibilities, tooling, and best practices.",
     },
     {
       label: "Company Awareness",
-      score: evaluation.categoryScores?.companyAwareness ?? 70,
+      score: evaluation.categoryScores?.companyAwareness ?? overallPct,
       icon: Building2,
       desc: "Understanding of company challenges, scale, and organizational fit.",
     },
@@ -462,7 +490,7 @@ function ResultsContent() {
 
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="font-bold text-xs bg-brand-50 text-brand-800 px-2.5 py-1 rounded-md border border-brand-200">
-                        {q.evaluation?.score ?? 7.0} / 10
+                        {q.evaluation?.score ?? evaluation.overallScore ?? 5.0} / 10
                       </span>
                       {isExpanded ? (
                         <ChevronUp className="w-4 h-4 text-slate-400" />

@@ -115,83 +115,116 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
     const updatedAnswers = [...answers, newAnswer];
     setAnswers(updatedAnswers);
 
-    const nextQNum = currentQuestionIndex + 2;
+    const questionNum = currentQuestionIndex + 1;
+    const isFinalQuestion = questionNum >= totalQuestions;
 
-    if (nextQNum > totalQuestions) {
-      // Complete interview: generate STAR evaluation and save
-      await completeAndSaveSession(updatedAnswers, questions);
-    } else {
-      // Try API route first, fallback to adaptiveEngine
-      let nextQ: InterviewQuestion | null = null;
-      try {
-        const response = await fetch("/api/interview/evaluate-and-next", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            config,
-            candidateProfile: profile,
-            previousQuestions: recordedQuestions,
-            currentQuestion: currentQ,
-            candidateAnswer: answerText,
-            answerDuration: durationForAnswer,
-            questionNumber: currentQuestionIndex + 1,
-            targetTotal: totalQuestions,
-          }),
-        });
+    let updatedRecordedQuestions = [...recordedQuestions];
+    let nextQ: InterviewQuestion | null = null;
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            if (data.recordedQuestion) {
-              setRecordedQuestions((prev) => [...prev, data.recordedQuestion]);
-            }
-            if (data.isComplete) {
-              await completeAndSaveSession(updatedAnswers, questions);
-              return;
-            }
-            if (data.nextQuestion) {
-              nextQ = {
-                id: `q-${nextQNum}`,
-                questionNumber: nextQNum,
-                totalQuestions,
-                text: data.nextQuestion.text,
-                category: data.nextQuestion.category,
-                questionType: data.nextQuestion.questionType,
-                difficulty: data.nextQuestion.difficulty,
-                isFollowUp: data.nextQuestion.isFollowUp,
-                followUpQuestionRelationship: data.nextQuestion.followUpQuestionRelationship,
-                yesNoOptions: data.nextQuestion.yesNoOptions,
-              };
-            }
+    try {
+      const response = await fetch("/api/interview/evaluate-and-next", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          config,
+          candidateProfile: profile,
+          previousQuestions: recordedQuestions,
+          currentQuestion: currentQ,
+          candidateAnswer: answerText,
+          answerDuration: durationForAnswer,
+          questionNumber: questionNum,
+          targetTotal: totalQuestions,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          if (data.recordedQuestion) {
+            updatedRecordedQuestions.push(data.recordedQuestion);
+            setRecordedQuestions(updatedRecordedQuestions);
+          }
+
+          if (isFinalQuestion || data.isComplete) {
+            await completeAndSaveSession(updatedAnswers, questions, updatedRecordedQuestions);
+            return;
+          }
+
+          if (data.nextQuestion) {
+            nextQ = {
+              id: `q-${questionNum + 1}`,
+              questionNumber: questionNum + 1,
+              totalQuestions,
+              text: data.nextQuestion.text,
+              category: data.nextQuestion.category,
+              questionType: data.nextQuestion.questionType,
+              difficulty: data.nextQuestion.difficulty,
+              isFollowUp: data.nextQuestion.isFollowUp,
+              followUpQuestionRelationship: data.nextQuestion.followUpQuestionRelationship,
+              yesNoOptions: data.nextQuestion.yesNoOptions,
+            };
           }
         }
-      } catch (e) {
-        console.warn("API route evaluate-and-next error, using local adaptive engine:", e);
       }
-
-      if (!nextQ) {
-        nextQ = adaptiveEngine.generateFollowUpQuestion(
-          config,
-          nextQNum,
-          currentQ.text,
-          answerText,
-          profile
-        );
-      }
-
-      setQuestions((prev) => [...prev, nextQ!]);
-      setCurrentQuestionIndex((prev) => prev + 1);
-      setQuestionDurationSeconds(0);
-      setIsSubmitting(false);
+    } catch (e) {
+      console.warn("API route evaluate-and-next error, using local evaluation and adaptive engine:", e);
     }
+
+    // Fallback if API route had an issue or was offline: evaluate locally
+    if (updatedRecordedQuestions.length <= currentQuestionIndex) {
+      const localEval = evaluationService.evaluateSingleAnswer(currentQ, answerText, config);
+      const fallbackRec: RecordedQuestion = {
+        id: currentQ.id || `rec-${questionNum}`,
+        questionNumber: questionNum,
+        totalQuestions,
+        question: currentQ.text,
+        questionType: currentQ.questionType || "technical",
+        difficulty: currentQ.difficulty || config.difficulty,
+        candidateAnswer: answerText,
+        timestamp: new Date().toISOString(),
+        answerDuration: durationForAnswer,
+        evaluation: localEval,
+        isFollowUp: !!currentQ.isFollowUp,
+        followUpQuestionRelationship: currentQ.followUpQuestionRelationship,
+      };
+      updatedRecordedQuestions.push(fallbackRec);
+      setRecordedQuestions(updatedRecordedQuestions);
+    }
+
+    if (isFinalQuestion) {
+      await completeAndSaveSession(updatedAnswers, questions, updatedRecordedQuestions);
+      return;
+    }
+
+    if (!nextQ) {
+      nextQ = adaptiveEngine.generateFollowUpQuestion(
+        config,
+        questionNum + 1,
+        currentQ.text,
+        answerText,
+        profile
+      );
+    }
+
+    setQuestions((prev) => [...prev, nextQ!]);
+    setCurrentQuestionIndex((prev) => prev + 1);
+    setQuestionDurationSeconds(0);
+    setIsSubmitting(false);
   };
 
   const completeAndSaveSession = async (
     finalAnswers: InterviewAnswer[],
-    finalQuestions: InterviewQuestion[]
+    finalQuestions: InterviewQuestion[],
+    finalRecordedQuestions?: RecordedQuestion[]
   ) => {
     try {
-      const evaluation = evaluationService.evaluateSession(config, finalQuestions, finalAnswers);
+      const recs = finalRecordedQuestions || recordedQuestions;
+      const evaluation = evaluationService.evaluateSession(
+        config,
+        finalQuestions,
+        finalAnswers,
+        recs
+      );
 
       const completedSession: InterviewSession = {
         id: `session-${Date.now()}`,
@@ -203,7 +236,7 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
         config,
         questions: finalQuestions,
         answers: finalAnswers,
-        recordedQuestions,
+        recordedQuestions: recs,
         currentQuestionIndex,
         timeElapsedSeconds,
         evaluation,
@@ -217,6 +250,17 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
         evaluation,
         user?.uid || profile?.uid
       );
+
+      // Explicitly store in sessionStorage and localStorage for immediate retrieval
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("preppilot_active_evaluation", JSON.stringify(evaluation));
+        sessionStorage.setItem(`preppilot_eval_${completedSession.id}`, JSON.stringify(evaluation));
+        sessionStorage.setItem("preppilot_completed_session", JSON.stringify(completedSession));
+        try {
+          localStorage.setItem(`preppilot_eval_${completedSession.id}`, JSON.stringify(evaluation));
+          localStorage.setItem("preppilot_last_completed_session", JSON.stringify(completedSession));
+        } catch {}
+      }
 
       setIsSubmitting(false);
       router.push(`/results?sessionId=${completedSession.id}`);
@@ -235,7 +279,7 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
 
   const finishEarlyAndEvaluate = async () => {
     setIsSubmitting(true);
-    await completeAndSaveSession(answers, questions);
+    await completeAndSaveSession(answers, questions, recordedQuestions);
   };
 
   const endInterview = () => {
