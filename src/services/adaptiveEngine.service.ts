@@ -475,14 +475,25 @@ export class AdaptiveEngineService {
     const domainMatrix = realCompanyQuestionMatrix[config.targetRole] || realCompanyQuestionMatrix["Software Engineer"];
     const basicQuestion = domainMatrix.stage1_basics[expLevel] || domainMatrix.stage1_basics["2–5 years"];
 
-    const text = `Welcome ${candidateName}. We're interviewing for the ${config.targetRole} role (${expLevel}) at ${companyName}. To start off, let's explore your core technical foundation in this domain:\n\n${basicQuestion}`;
+    let text = "";
+    let category = "Domain Fundamentals";
+
+    if (config.targetRole === "College Lecturer") {
+      text = `Welcome ${candidateName}. We're conducting this academic faculty interview for the ${config.targetRole} position (${expLevel}) at ${companyName}. To begin, let's explore your foundational teaching methodology and subject matter mastery:\n\n${basicQuestion}`;
+      category = "Pedagogical & Subject Mastery";
+    } else if (config.targetRole === "UI Designer") {
+      text = `Welcome ${candidateName}. We're conducting this design interview for the ${config.targetRole} position (${expLevel}) at ${companyName}. To kick off, let's explore your core design foundations and user-centric problem solving:\n\n${basicQuestion}`;
+      category = "Design Fundamentals & Principles";
+    } else {
+      text = `Welcome ${candidateName}. We're interviewing for the ${config.targetRole} role (${expLevel}) at ${companyName}. To start off, let's explore your core technical foundation in this domain:\n\n${basicQuestion}`;
+    }
 
     return {
       id: "q-1",
       questionNumber: 1,
       totalQuestions,
       text,
-      category: "Domain Fundamentals",
+      category,
       isFollowUp: false,
     };
   }
@@ -511,13 +522,20 @@ export class AdaptiveEngineService {
 
     const isTrivial = wordCount < 6 || lowerAnswer.includes("don't know") || lowerAnswer.includes("idk") || lowerAnswer.includes("no idea");
 
-    // If candidate gives a non-answer or extremely brief response, challenge them explicitly
+    // If candidate gives a non-answer or extremely brief response, challenge them constructively
     if (isTrivial) {
+      const probingText =
+        config.targetRole === "College Lecturer"
+          ? `In an academic faculty selection interview at ${companyName}, the committee needs to hear your pedagogical rationale and conceptual clarity. Could you walk me through your initial thoughts on this question, what core principles you would emphasize to students, or how you would structure this concept in a lecture?`
+          : config.targetRole === "UI Designer"
+          ? `In a design interview at ${companyName}, interviewers need to understand your user-centric reasoning and design thinking process. Could you walk me through your initial thoughts or how you would approach this from an interaction design perspective?`
+          : `In a real ${config.targetRole} interview at ${companyName}, interviewers need to hear your step-by-step reasoning even on tough topics. Could you walk me through your initial thoughts on this question, what fundamentals come to mind, or how you would investigate it if encountered on the job?`;
+
       return {
         id: `q-${questionNumber}`,
         questionNumber,
         totalQuestions,
-        text: `In a real ${config.targetRole} interview at a company like ${companyName}, interviewers need to hear your step-by-step reasoning even on tough topics. Could you walk me through your initial thoughts on this question, what fundamentals come to mind, or how you would investigate it if encountered on the job?`,
+        text: probingText,
         category: "Constructive Probing",
         isFollowUp: true,
       };

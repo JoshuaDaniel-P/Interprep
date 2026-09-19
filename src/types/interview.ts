@@ -17,7 +17,16 @@ export type CompanyType =
   | "Service Company"
   | "Consulting"
   | "Fintech"
-  | "Enterprise";
+  | "Enterprise"
+  | "Autonomous Engineering College"
+  | "Tier-1 Research Institute (IIT/NIT/BITS)"
+  | "State / Central University"
+  | "Polytechnic / Community College"
+  | "EdTech Academy"
+  | "Design Agency / Studio"
+  | "Consumer Tech"
+  | "B2B SaaS"
+  | string;
 
 export type ExperienceLevel =
   | "Student"

@@ -15,7 +15,7 @@ interface SelectCardGroupProps<T extends string | number = string> {
   options: OptionItem<T>[];
   selectedValue: T;
   onChange: (value: T) => void;
-  columns?: 2 | 3 | 4;
+  columns?: 1 | 2 | 3 | 4;
 }
 
 export function SelectCardGroup<T extends string | number = string>({
@@ -27,6 +27,7 @@ export function SelectCardGroup<T extends string | number = string>({
   columns = 3,
 }: SelectCardGroupProps<T>) {
   const gridCols = {
+    1: "grid-cols-1",
     2: "grid-cols-1 sm:grid-cols-2",
     3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
     4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",

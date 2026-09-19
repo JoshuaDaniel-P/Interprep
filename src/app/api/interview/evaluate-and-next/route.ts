@@ -206,7 +206,12 @@ async function callGeminiForEvaluationAndNext(
   shouldComplete: boolean
 ) {
   const context = buildCandidateContext(config, profile);
-  const prompt = `You are an expert AI interviewer at PrepPilot conducting a mock interview for the role "${config.targetRole}" at "${context.targetCompany}".
+  const personaIntro =
+    config.targetRole === "College Lecturer"
+      ? `You are an Academic Selection Committee Board Member / Dean of Faculty at "${context.targetCompany}" conducting a faculty appointment interview for the role of ${config.targetRole}. Focus on curriculum depth, teaching pedagogy, classroom engagement, student evaluation, and research/lab coordination. Do NOT use corporate tech buzzwords like sprints, Jira tickets, production outages, or agile backlogs.`
+      : `You are an expert AI interviewer at PrepPilot conducting a mock interview for the role "${config.targetRole}" at "${context.targetCompany}".`;
+
+  const prompt = `${personaIntro}
 Difficulty level: ${config.difficulty}. Target Total Questions: ${targetTotal}. Current Question: #${questionNumber}.
 
 CANDIDATE CONTEXT:
@@ -289,8 +294,12 @@ async function callOpenAIForEvaluationAndNext(
 ) {
   const context = buildCandidateContext(config, profile);
 
-  const systemPrompt = `You are an elite, adaptive technical and behavioral interviewer at PrepPilot.
-Interviewing for: "${config.targetRole}" at "${context.targetCompany}".
+  const personaDesc =
+    config.targetRole === "College Lecturer"
+      ? `You are an Academic Selection Committee Member / Dean of Faculty at "${context.targetCompany}" conducting a faculty appointment interview for the role of ${config.targetRole}. Focus on curriculum depth, teaching pedagogy, classroom engagement, and student evaluation.`
+      : `You are an elite, adaptive technical and behavioral interviewer at PrepPilot. Interviewing for: "${config.targetRole}" at "${context.targetCompany}".`;
+
+  const systemPrompt = `${personaDesc}
 Difficulty: "${config.difficulty}".
 CANDIDATE BACKGROUND:
 ${JSON.stringify(context, null, 2)}

@@ -37,6 +37,37 @@ export function QuestionDisplay({ question, autoSpeak = false }: QuestionDisplay
     }
   };
 
+  const findIndianVoice = (): SpeechSynthesisVoice | null => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return null;
+
+    // 1. Direct en-IN voice match
+    const directIndian = voices.find(
+      (v) =>
+        v.lang === "en-IN" ||
+        v.lang === "en_IN" ||
+        v.lang.toLowerCase().replace("_", "-") === "en-in"
+    );
+    if (directIndian) return directIndian;
+
+    // 2. Name search for Indian English voices (Heera, Ravi, Neerja, Google English India, etc.)
+    const nameMatch = voices.find((v) => {
+      const n = v.name.toLowerCase();
+      return (
+        n.includes("india") ||
+        n.includes("heera") ||
+        n.includes("ravi") ||
+        n.includes("neerja") ||
+        n.includes("prabhat")
+      );
+    });
+    if (nameMatch) return nameMatch;
+
+    // 3. Fallback to English voice
+    return voices.find((v) => v.lang.startsWith("en")) || null;
+  };
+
   const speakQuestion = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
 
@@ -48,8 +79,13 @@ export function QuestionDisplay({ question, autoSpeak = false }: QuestionDisplay
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(question.text);
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
+    const indianVoice = findIndianVoice();
+    if (indianVoice) {
+      utterance.voice = indianVoice;
+    }
+    utterance.lang = "en-IN"; // Indian English
+    utterance.rate = 1.10; // Faster, natural, and responsive speech rate
+    utterance.pitch = 1.02;
 
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
@@ -59,14 +95,23 @@ export function QuestionDisplay({ question, autoSpeak = false }: QuestionDisplay
   };
 
   useEffect(() => {
-    if (autoSpeak) {
-      speakQuestion();
-    }
-    return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      // Warm up voice list
+      window.speechSynthesis.getVoices();
+      const onVoicesChanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+      window.speechSynthesis.addEventListener("voiceschanged", onVoicesChanged);
+
+      if (autoSpeak) {
+        speakQuestion();
       }
-    };
+
+      return () => {
+        window.speechSynthesis.removeEventListener("voiceschanged", onVoicesChanged);
+        window.speechSynthesis.cancel();
+      };
+    }
   }, [question.id]);
 
   return (
