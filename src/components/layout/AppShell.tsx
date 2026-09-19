@@ -4,10 +4,27 @@ import React, { useState } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
 import { MobileNav } from "./MobileNav";
-import { mockUserProfile } from "@/data/mock/dashboard.mock";
+import { useAuth } from "@/context/AuthContext";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const { user, profile } = useAuth();
+
+  const displayName =
+    profile?.fullName?.trim() ||
+    user?.displayName?.trim() ||
+    user?.email?.split("@")[0] ||
+    "Candidate";
+
+  const displayEmail = profile?.email?.trim() || user?.email || "";
+  const targetRole = profile?.targetGoal?.targetRole || "Software Developer";
+
+  const activeUser = {
+    name: displayName,
+    email: displayEmail,
+    targetRole: targetRole,
+    avatarUrl: user?.photoURL || "",
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans text-gray-900 antialiased">
@@ -23,7 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 md:pl-64 flex flex-col min-w-0">
         <AppHeader
-          user={mockUserProfile}
+          user={activeUser}
           onOpenMobileNav={() => setMobileNavOpen(true)}
         />
         <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">

@@ -39,7 +39,7 @@ export function InterviewWorkspace() {
       />
 
       {/* Main Single Question Display */}
-      <QuestionDisplay question={currentQuestion} />
+      <QuestionDisplay question={currentQuestion} autoSpeak={config.mode === "Voice"} />
 
       {/* Candidate Answer Box */}
       <AnswerInput onSubmit={submitAnswer} isSubmitting={isSubmitting} />

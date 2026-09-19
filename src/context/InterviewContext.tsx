@@ -6,8 +6,12 @@ import {
   InterviewConfig,
   InterviewQuestion,
   InterviewAnswer,
+  InterviewSession,
 } from "@/types/interview";
-import { adaptiveEngine } from "@/services/adaptiveEngine.service";
+import { adaptiveEngine, getStreamQuestionCount } from "@/services/adaptiveEngine.service";
+import { evaluationService } from "@/services/evaluation.service";
+import { interviewService } from "@/services/interview.service";
+import { useAuth } from "@/context/AuthContext";
 
 interface InterviewContextType {
   config: InterviewConfig;
@@ -18,7 +22,7 @@ interface InterviewContextType {
   totalQuestions: number;
   timeElapsedSeconds: number;
   isSubmitting: boolean;
-  submitAnswer: (answerText: string) => void;
+  submitAnswer: (answerText: string) => Promise<void>;
   endInterview: () => void;
 }
 
@@ -35,6 +39,7 @@ const InterviewContext = createContext<InterviewContextType | undefined>(undefin
 
 export function InterviewProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { user } = useAuth();
 
   const [config, setConfig] = useState<InterviewConfig>(defaultConfig);
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
@@ -71,9 +76,9 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(timer);
   }, []);
 
-  const totalQuestions = 5;
+  const totalQuestions = getStreamQuestionCount(config);
 
-  const submitAnswer = (answerText: string) => {
+  const submitAnswer = async (answerText: string) => {
     setIsSubmitting(true);
 
     const currentQ = questions[currentQuestionIndex];
@@ -88,42 +93,44 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
     const updatedAnswers = [...answers, newAnswer];
     setAnswers(updatedAnswers);
 
-    setTimeout(() => {
-      const nextQNum = currentQuestionIndex + 2; // 1-indexed next question
+    const nextQNum = currentQuestionIndex + 2; // 1-indexed next question
 
-      if (nextQNum > totalQuestions) {
-        // Complete interview and store transcript
-        const completedSession = {
-          id: `session-${Date.now()}`,
-          createdAt: new Date().toISOString(),
-          status: "completed",
-          score: 7.6,
-          config,
-          questions,
-          answers: updatedAnswers,
-          currentQuestionIndex,
-          timeElapsedSeconds,
-        };
+    if (nextQNum > totalQuestions) {
+      // Complete interview: generate STAR structured evaluation
+      const evaluation = evaluationService.evaluateSession(config, questions, updatedAnswers);
 
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem("preppilot_completed_session", JSON.stringify(completedSession));
-        }
+      const completedSession: InterviewSession = {
+        id: `session-${Date.now()}`,
+        userId: user?.uid || "guest",
+        createdAt: new Date().toISOString(),
+        status: "completed",
+        score: evaluation.overallScore,
+        config,
+        questions,
+        answers: updatedAnswers,
+        currentQuestionIndex,
+        timeElapsedSeconds,
+        evaluation,
+      };
 
-        router.push("/results");
-      } else {
-        // Generate adaptive follow-up
-        const followUpQ = adaptiveEngine.generateFollowUpQuestion(
-          config,
-          nextQNum,
-          currentQ.text,
-          answerText
-        );
+      // Persist to Firestore + local storage
+      await interviewService.saveCompletedSession(completedSession, evaluation, user?.uid);
 
-        setQuestions((prev) => [...prev, followUpQ]);
-        setCurrentQuestionIndex((prev) => prev + 1);
-        setIsSubmitting(false);
-      }
-    }, 600);
+      setIsSubmitting(false);
+      router.push(`/results?sessionId=${completedSession.id}`);
+    } else {
+      // Generate adaptive follow-up
+      const followUpQ = adaptiveEngine.generateFollowUpQuestion(
+        config,
+        nextQNum,
+        currentQ.text,
+        answerText
+      );
+
+      setQuestions((prev) => [...prev, followUpQ]);
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setIsSubmitting(false);
+    }
   };
 
   const endInterview = () => {

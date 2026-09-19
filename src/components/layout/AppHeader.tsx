@@ -43,16 +43,22 @@ export function AppHeader({ user, onOpenMobileNav }: AppHeaderProps) {
           </Button>
         </Link>
 
-        {/* User profile badge */}
-        <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
-          <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-sm border border-brand-200">
-            {user.name.charAt(0)}
+        {/* User profile badge - clickable to view profile */}
+        <Link
+          href="/profile"
+          className="flex items-center gap-3 pl-3 border-l border-gray-200 hover:opacity-85 transition-opacity group"
+          title="View & Edit Profile"
+        >
+          <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-sm border border-brand-200 group-hover:border-brand-400 transition-colors">
+            {user.name ? user.name.charAt(0).toUpperCase() : "C"}
           </div>
           <div className="hidden lg:block text-left">
-            <p className="text-sm font-semibold text-gray-900 leading-none">{user.name}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{user.email}</p>
+            <p className="text-sm font-semibold text-gray-900 leading-none group-hover:text-brand-600 transition-colors">
+              {user.name}
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5 max-w-[160px] truncate">{user.email}</p>
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );

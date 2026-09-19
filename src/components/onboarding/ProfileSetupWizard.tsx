@@ -41,6 +41,12 @@ export function ProfileSetupWizard() {
   const [status, setStatus] = useState<"Student" | "Graduate" | "Employed" | "Unemployed">("Student");
   const [bio, setBio] = useState("");
 
+  useEffect(() => {
+    if (user?.displayName && !fullName) {
+      setFullName(user.displayName);
+    }
+  }, [user]);
+
   // Step 2: Education
   const [highestQualification, setHighestQualification] = useState("Undergraduate");
   const [degree, setDegree] = useState("B.Tech");

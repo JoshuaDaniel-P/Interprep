@@ -51,13 +51,20 @@ const typeOptions: OptionItem<InterviewType>[] = [
 
 const modeOptions: OptionItem<InterviewMode>[] = [
   { value: "Text", label: "Text Interview", description: "Interactive text-based adaptive Q&A" },
-  { value: "Voice", label: "Voice Interview", description: "Voice mode coming soon", disabled: true },
+  { value: "Voice", label: "Voice Interview", description: "Browser Speech-to-Text & AI Voice Questions" },
 ];
 
 const difficultyOptions: OptionItem<Difficulty>[] = [
   { value: "Comfortable", label: "Comfortable", description: "Supportive tone, straightforward questions" },
   { value: "Realistic", label: "Realistic", description: "Standard professional interview standard" },
   { value: "Pressure", label: "Pressure", description: "Rigorous follow-ups & metrics probing" },
+];
+
+const questionLengthOptions: OptionItem<number>[] = [
+  { value: 0, label: "Stream Auto-Tuned", description: "Auto-tuned questions based on selected stream (4–6 Qs)" },
+  { value: 3, label: "3 Questions (Quick)", description: "Fast mock interview session" },
+  { value: 5, label: "5 Questions (Standard)", description: "Standard balanced evaluation" },
+  { value: 7, label: "7 Questions (Deep Dive)", description: "Comprehensive pressure test" },
 ];
 
 export function InterviewSetupForm() {
@@ -70,6 +77,7 @@ export function InterviewSetupForm() {
     interviewType: "Behavioral",
     mode: "Text",
     difficulty: "Realistic",
+    questionCount: 0,
   });
 
   const [isStarting, setIsStarting] = useState(false);
@@ -78,7 +86,6 @@ export function InterviewSetupForm() {
     e.preventDefault();
     setIsStarting(true);
 
-    // Save selected configuration to session storage for the interview workspace
     if (typeof window !== "undefined") {
       sessionStorage.setItem("preppilot_active_config", JSON.stringify(config));
     }
@@ -160,19 +167,34 @@ export function InterviewSetupForm() {
         </Card>
       </div>
 
-      {/* 6. Interview Mode */}
-      <Card>
-        <CardContent className="p-6">
-          <SelectCardGroup
-            label="6. Interview Mode"
-            description="Choose how you want to conduct the interview."
-            options={modeOptions}
-            selectedValue={config.mode}
-            onChange={(mode) => setConfig((prev) => ({ ...prev, mode }))}
-            columns={2}
-          />
-        </CardContent>
-      </Card>
+      {/* 6. Question Count & Interview Mode */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <SelectCardGroup
+              label="6. Question Count"
+              description="Choose question length or auto-tune per stream."
+              options={questionLengthOptions}
+              selectedValue={config.questionCount || 0}
+              onChange={(questionCount) => setConfig((prev) => ({ ...prev, questionCount }))}
+              columns={2}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <SelectCardGroup
+              label="7. Interview Mode"
+              description="Choose how you want to conduct the interview."
+              options={modeOptions}
+              selectedValue={config.mode}
+              onChange={(mode) => setConfig((prev) => ({ ...prev, mode }))}
+              columns={2}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Summary Banner & Action */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
@@ -183,7 +205,7 @@ export function InterviewSetupForm() {
           <div>
             <h3 className="text-sm font-bold text-gray-900">Summary Configuration</h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              {config.targetRole} • {config.companyType} • {config.experienceLevel} • {config.interviewType} ({config.difficulty})
+              {config.targetRole} • {config.companyType} • {config.interviewType} ({config.difficulty}) • {config.mode} Mode
             </p>
           </div>
         </div>

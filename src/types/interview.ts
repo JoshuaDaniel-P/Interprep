@@ -34,6 +34,7 @@ export interface InterviewConfig {
   interviewType: InterviewType;
   mode: InterviewMode;
   difficulty: Difficulty;
+  questionCount?: number;
 }
 
 export interface InterviewQuestion {
@@ -57,6 +58,7 @@ export type InterviewStatus = "setup" | "in_progress" | "completed";
 
 export interface InterviewSession {
   id: string;
+  userId?: string;
   createdAt: string;
   config: InterviewConfig;
   status: InterviewStatus;
@@ -65,4 +67,5 @@ export interface InterviewSession {
   currentQuestionIndex: number;
   timeElapsedSeconds: number;
   score?: number;
+  evaluation?: any;
 }

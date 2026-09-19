@@ -78,7 +78,31 @@ export class CandidateService {
       console.warn("Firestore fetch error, falling back to local cache:", e);
     }
 
-    return defaultMockCandidateProfile;
+    if (uid === "candidate-demo-123") {
+      return defaultMockCandidateProfile;
+    }
+
+    return {
+      uid,
+      email: "",
+      fullName: "",
+      status: "Student",
+      isOnboarded: false,
+      readinessPercentage: 0,
+      skills: [],
+      projects: [],
+      experience: [],
+      achievements: [],
+      targetGoal: {
+        targetRole: "Software Developer",
+        targetCompanyType: "Product Company",
+        targetIndustry: "Technology",
+        interviewType: "Behavioral",
+        difficulty: "Realistic",
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
   }
 
   async saveProfile(profile: CandidateProfile): Promise<void> {

@@ -1,31 +1,49 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Evaluation } from "@/types/evaluation";
+import { InterviewSession } from "@/types/interview";
 import { mockEvaluationDetails } from "@/data/mock/interview.mock";
 import { interviewService } from "@/services/interview.service";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { CheckCircle2, AlertCircle, Lightbulb, PlayCircle, History, Award } from "lucide-react";
+import { CheckCircle2, AlertCircle, Lightbulb, PlayCircle, History, Award, FileText } from "lucide-react";
 
-export function ResultsEvaluationView() {
+function ResultsContent() {
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("sessionId") || "session-101";
+
   const [evaluation, setEvaluation] = useState<Evaluation>(mockEvaluationDetails["session-101"]);
+  const [session, setSession] = useState<InterviewSession | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadResults() {
-      const result = await interviewService.getEvaluation("session-101");
-      if (result) {
-        setEvaluation(result);
+      setIsLoading(true);
+      try {
+        const evalResult = await interviewService.getEvaluation(sessionId);
+        if (evalResult) {
+          setEvaluation(evalResult);
+        }
+        const sessionResult = await interviewService.getInterviewById(sessionId);
+        if (sessionResult) {
+          setSession(sessionResult);
+        }
+      } catch (e) {
+        console.warn("Error loading results:", e);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadResults();
-  }, []);
+  }, [sessionId]);
 
   const skills = [
     { label: "Content", score: evaluation.skills.content.score, feedback: evaluation.skills.content.feedback },
-    { label: "Structure", score: evaluation.skills.structure.score, feedback: evaluation.skills.structure.feedback },
+    { label: "Structure (STAR)", score: evaluation.skills.structure.score, feedback: evaluation.skills.structure.feedback },
     { label: "Relevance", score: evaluation.skills.relevance.score, feedback: evaluation.skills.relevance.feedback },
     { label: "Clarity", score: evaluation.skills.clarity.score, feedback: evaluation.skills.clarity.feedback },
     { label: "Confidence", score: evaluation.skills.confidence.score, feedback: evaluation.skills.confidence.feedback },
@@ -39,13 +57,19 @@ export function ResultsEvaluationView() {
         <div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3">
             <Award className="w-3.5 h-3.5" />
-            Interview Complete
+            Interview Complete & Evaluated
           </span>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             Performance Review & Feedback
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Structured analysis generated across 6 core interview competencies.
+            {session ? (
+              <span>
+                {session.config.targetRole} • {session.config.companyType} ({session.config.difficulty}) • {session.answers.length} Questions Completed
+              </span>
+            ) : (
+              "Structured analysis generated across 6 core interview competencies."
+            )}
           </p>
         </div>
 
@@ -142,20 +166,36 @@ export function ResultsEvaluationView() {
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4 border-t border-slate-200">
-        <Link href="/history" className="w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200">
+        <Link href={`/history/${sessionId}`} className="w-full sm:w-auto">
           <Button variant="outline" className="w-full gap-2">
-            <History className="w-4 h-4" />
-            View History
+            <FileText className="w-4 h-4" />
+            View Full Q&A Transcript
           </Button>
         </Link>
-        <Link href="/setup" className="w-full sm:w-auto">
-          <Button size="lg" className="w-full gap-2 px-8">
-            <PlayCircle className="w-5 h-5" />
-            Practice Again
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Link href="/history" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full gap-2">
+              <History className="w-4 h-4" />
+              Session History
+            </Button>
+          </Link>
+          <Link href="/setup" className="w-full sm:w-auto">
+            <Button size="lg" className="w-full gap-2 px-8">
+              <PlayCircle className="w-5 h-5" />
+              Practice Another
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
+  );
+}
+
+export function ResultsEvaluationView() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading interview evaluation...</div>}>
+      <ResultsContent />
+    </Suspense>
   );
 }
