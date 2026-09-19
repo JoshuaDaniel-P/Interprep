@@ -4,11 +4,44 @@ import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Evaluation } from "@/types/evaluation";
-import { StoredInterviewRecord, RecordedQuestion, InterviewSession } from "@/types/interview";
+<<<<<<< HEAD
+import { InterviewSession } from "@/types/interview";
+import { mockEvaluationDetails } from "@/data/mock/interview.mock";
+=======
+import { StoredInterviewRecord, RecordedQuestion } from "@/types/interview";
+>>>>>>> origin/main
 import { interviewService } from "@/services/interview.service";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+<<<<<<< HEAD
+import { CheckCircle2, AlertCircle, Lightbulb, PlayCircle, History, Award, FileText } from "lucide-react";
+
+function ResultsContent() {
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("sessionId") || "session-101";
+
+  const [evaluation, setEvaluation] = useState<Evaluation>(mockEvaluationDetails["session-101"]);
+  const [session, setSession] = useState<InterviewSession | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadResults() {
+      setIsLoading(true);
+      try {
+        const evalResult = await interviewService.getEvaluation(sessionId);
+        if (evalResult) {
+          setEvaluation(evalResult);
+        }
+        const sessionResult = await interviewService.getInterviewById(sessionId);
+        if (sessionResult) {
+          setSession(sessionResult);
+        }
+      } catch (e) {
+        console.warn("Error loading results:", e);
+      } finally {
+        setIsLoading(false);
+=======
 import {
   CheckCircle2,
   AlertCircle,
@@ -27,56 +60,51 @@ import {
   Building2,
   Check,
   AlertTriangle,
-  FileText,
 } from "lucide-react";
 
-function ResultsContent() {
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get("sessionId") || "session-101";
-
+export function ResultsEvaluationView() {
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
-  const [sessionRecord, setSessionRecord] = useState<any>(null);
+  const [sessionRecord, setSessionRecord] = useState<StoredInterviewRecord | null>(null);
   const [expandedQuestion, setExpandedQuestion] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadResults() {
-      setIsLoading(true);
-      try {
-        if (typeof window !== "undefined") {
-          const activeEvalStr = sessionStorage.getItem(`preppilot_eval_${sessionId}`) || sessionStorage.getItem("preppilot_active_evaluation");
-          const activeSessionStr = sessionStorage.getItem("preppilot_completed_session");
-          if (activeEvalStr) {
-            try {
-              setEvaluation(JSON.parse(activeEvalStr));
-            } catch {}
-          }
-          if (activeSessionStr) {
-            try {
-              setSessionRecord(JSON.parse(activeSessionStr));
-            } catch {}
-          }
+      // 1. Try session storage first
+      if (typeof window !== "undefined") {
+        const activeEvalStr = sessionStorage.getItem("preppilot_active_evaluation");
+        const activeSessionStr = sessionStorage.getItem("preppilot_completed_session");
+        if (activeEvalStr) {
+          try {
+            setEvaluation(JSON.parse(activeEvalStr));
+          } catch {}
         }
+        if (activeSessionStr) {
+          try {
+            setSessionRecord(JSON.parse(activeSessionStr));
+          } catch {}
+        }
+      }
 
-        const evalResult = await interviewService.getEvaluation(sessionId);
-        if (evalResult) {
-          setEvaluation((prev) => prev || evalResult);
-        }
-
-        const sResult = await interviewService.getInterviewById(sessionId);
-        if (sResult) {
-          setSessionRecord((prev: any) => prev || sResult);
-        }
-      } catch (e) {
-        console.warn("Error loading results:", e);
-      } finally {
-        setIsLoading(false);
+      // 2. Fallback to service if not in session storage
+      const result = await interviewService.getEvaluation("session-101");
+      if (result) {
+        setEvaluation((prev) => prev || result);
+>>>>>>> origin/main
       }
     }
     loadResults();
   }, [sessionId]);
 
-  if (isLoading && !evaluation) {
+<<<<<<< HEAD
+  const skills = [
+    { label: "Content", score: evaluation.skills.content.score, feedback: evaluation.skills.content.feedback },
+    { label: "Structure (STAR)", score: evaluation.skills.structure.score, feedback: evaluation.skills.structure.feedback },
+    { label: "Relevance", score: evaluation.skills.relevance.score, feedback: evaluation.skills.relevance.feedback },
+    { label: "Clarity", score: evaluation.skills.clarity.score, feedback: evaluation.skills.clarity.feedback },
+    { label: "Confidence", score: evaluation.skills.confidence.score, feedback: evaluation.skills.confidence.feedback },
+    { label: "Conciseness", score: evaluation.skills.conciseness.score, feedback: evaluation.skills.conciseness.feedback },
+=======
+  if (!evaluation) {
     return (
       <div className="p-12 text-center text-gray-500">
         Loading evaluation report...
@@ -84,64 +112,55 @@ function ResultsContent() {
     );
   }
 
-  if (!evaluation) {
-    return (
-      <div className="p-12 text-center text-gray-500 space-y-4">
-        <p>Evaluation data not found for this session.</p>
-        <Link href="/history">
-          <Button variant="outline">View Session History</Button>
-        </Link>
-      </div>
-    );
-  }
-
+  // 7 Required Categories
   const categories = [
     {
       label: "Technical Knowledge",
-      score: evaluation.categoryScores?.technicalKnowledge ?? Math.round((evaluation.skills?.content?.score || 7.5) * 10),
+      score: evaluation.categoryScores?.technicalKnowledge ?? 75,
       icon: Code2,
       desc: "Core domain logic, data models, language runtime, and API patterns.",
     },
     {
       label: "Problem Solving",
-      score: evaluation.categoryScores?.problemSolving ?? Math.round((evaluation.skills?.structure?.score || 7.2) * 10),
+      score: evaluation.categoryScores?.problemSolving ?? 72,
       icon: Brain,
       desc: "System decomposition, edge-case consideration, and debugging reasoning.",
     },
     {
       label: "Projects & Architecture",
-      score: evaluation.categoryScores?.projects ?? Math.round((evaluation.skills?.relevance?.score || 8.0) * 10),
+      score: evaluation.categoryScores?.projects ?? 80,
       icon: FolderGit2,
       desc: "Depth in discussing owned projects, tradeoffs, and scaling decisions.",
     },
     {
       label: "Communication",
-      score: evaluation.categoryScores?.communication ?? Math.round((evaluation.skills?.clarity?.score || 7.0) * 10),
+      score: evaluation.categoryScores?.communication ?? 68,
       icon: MessageSquare,
       desc: "Clarity, concise explanations, and terminology precision.",
     },
     {
       label: "Behavioral & STAR",
-      score: evaluation.categoryScores?.behavioral ?? Math.round((evaluation.skills?.confidence?.score || 7.4) * 10),
+      score: evaluation.categoryScores?.behavioral ?? 74,
       icon: Users,
       desc: "Teamwork, conflict resolution, ownership, and structured STAR answers.",
     },
     {
       label: "Role Knowledge",
-      score: evaluation.categoryScores?.roleKnowledge ?? Math.round((evaluation.skills?.conciseness?.score || 7.5) * 10),
+      score: evaluation.categoryScores?.roleKnowledge ?? 76,
       icon: Briefcase,
       desc: "Awareness of day-to-day responsibilities, tooling, and best practices.",
     },
     {
       label: "Company Awareness",
-      score: evaluation.categoryScores?.companyAwareness ?? 75,
+      score: evaluation.categoryScores?.companyAwareness ?? 70,
       icon: Building2,
       desc: "Understanding of company challenges, scale, and organizational fit.",
     },
+>>>>>>> origin/main
   ];
 
   const questionsList: RecordedQuestion[] =
-    evaluation.questions || sessionRecord?.recordedQuestions || sessionRecord?.questions || [];
+    evaluation.questions || sessionRecord?.questions || [];
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
@@ -156,13 +175,17 @@ function ResultsContent() {
             Performance Review & Gap Analysis
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            {sessionRecord ? (
+<<<<<<< HEAD
+            {session ? (
               <span>
-                {sessionRecord.config?.targetRole || sessionRecord.role} • {sessionRecord.config?.company || sessionRecord.company || sessionRecord.config?.companyType} ({sessionRecord.config?.difficulty || sessionRecord.difficulty} Difficulty)
+                {session.config.targetRole} • {session.config.companyType} ({session.config.difficulty}) • {session.answers.length} Questions Completed
               </span>
             ) : (
-              "Comprehensive adaptive evaluation report across core competencies."
+              "Structured analysis generated across 6 core interview competencies."
             )}
+=======
+            {sessionRecord ? `${sessionRecord.role} at ${sessionRecord.company} (${sessionRecord.difficulty} Difficulty)` : "Comprehensive adaptive evaluation report across 7 core dimensions."}
+>>>>>>> origin/main
           </p>
         </div>
 
@@ -185,7 +208,7 @@ function ResultsContent() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-bold text-slate-900">
-            Assessment Across Core Competencies
+            Assessment Across 7 Core Categories
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -220,7 +243,7 @@ function ResultsContent() {
         </CardContent>
       </Card>
 
-      {/* Recommended Preparation Areas */}
+      {/* Recommended Preparation Areas (Requirement 10: Identify what to prepare, do not teach course) */}
       <Card className="border-brand-300 bg-brand-50/40">
         <CardHeader>
           <CardTitle className="text-sm font-bold text-brand-950 flex items-center gap-2">
@@ -229,7 +252,7 @@ function ResultsContent() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 pt-0 space-y-3">
-          {(evaluation.recommendedPreparationAreas || evaluation.recommendations || []).map((rec, idx) => (
+          {(evaluation.recommendedPreparationAreas || evaluation.recommendations).map((rec, idx) => (
             <div
               key={idx}
               className="p-3.5 rounded-xl bg-white border border-brand-200 text-xs sm:text-sm text-brand-950 font-medium leading-relaxed flex items-start gap-2.5"
@@ -280,12 +303,188 @@ function ResultsContent() {
         </Card>
       </div>
 
+      {/* Pattern Insights: Recurring Issues & Structure/Technical Gaps */}
+      {(evaluation.recurringIssues?.length || evaluation.technicalGaps?.length) ? (
+        <Card className="border-slate-200">
+          <CardHeader>
+            <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
+              Pattern Analysis: Recurring Issues & Identified Knowledge Gaps
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 pt-0 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {evaluation.recurringIssues && evaluation.recurringIssues.length > 0 && (
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Recurring Response Patterns
+                </h4>
+                <ul className="space-y-1.5 text-xs text-slate-700">
+                  {evaluation.recurringIssues.map((iss, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-amber-500 font-bold">•</span>
+                      <span>{iss}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {evaluation.technicalGaps && evaluation.technicalGaps.length > 0 && (
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Identified Technical Gaps
+                </h4>
+                <ul className="space-y-1.5 text-xs text-slate-700">
+                  {evaluation.technicalGaps.map((gap, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-brand-600 font-bold">•</span>
+                      <span>{gap}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {/* Question-by-Question Detailed Review Accordion */}
+      {questionsList.length > 0 && (
+        <Card className="border-slate-200">
+          <CardHeader>
+            <CardTitle className="text-base font-bold text-slate-900">
+              Question-by-Question Evaluation ({questionsList.length} Questions)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 pt-0 space-y-4">
+            {questionsList.map((q, idx) => {
+              const isExpanded = expandedQuestion === idx;
+              return (
+                <div
+                  key={q.id || idx}
+                  className="rounded-xl border border-slate-200 bg-white overflow-hidden transition-all shadow-2xs"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setExpandedQuestion(isExpanded ? null : idx)}
+                    className="w-full p-4 text-left flex items-start justify-between gap-4 hover:bg-slate-50/80 transition-colors"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700">
+                          Q{idx + 1}
+                        </span>
+                        <span className="text-xs font-semibold text-brand-700 uppercase tracking-wider">
+                          {q.questionType}
+                        </span>
+                        {q.isFollowUp && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                            Follow-up
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-semibold text-slate-900 pt-0.5">
+                        {q.question}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="font-bold text-xs bg-brand-50 text-brand-800 px-2.5 py-1 rounded-md border border-brand-200">
+                        {q.evaluation?.score ?? 7.0} / 10
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                      )}
+                    </div>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="p-5 border-t border-slate-100 bg-slate-50/50 space-y-4 text-xs sm:text-sm">
+                      <div>
+                        <span className="font-bold text-slate-700 block mb-1">
+                          Candidate Answer:
+                        </span>
+                        <div className="p-3.5 rounded-lg bg-white border border-slate-200 text-slate-800 leading-relaxed">
+                          {q.candidateAnswer}
+                        </div>
+                      </div>
+
+                      {q.evaluation && (
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 text-center font-semibold">
+                          <div className="p-2 rounded bg-white border border-slate-200">
+                            <span className="text-[10px] text-slate-500 block uppercase">Correctness</span>
+                            <span className="text-slate-900 text-xs">{q.evaluation.technicalCorrectness}/10</span>
+                          </div>
+                          <div className="p-2 rounded bg-white border border-slate-200">
+                            <span className="text-[10px] text-slate-500 block uppercase">Relevance</span>
+                            <span className="text-slate-900 text-xs">{q.evaluation.relevance}/10</span>
+                          </div>
+                          <div className="p-2 rounded bg-white border border-slate-200">
+                            <span className="text-[10px] text-slate-500 block uppercase">Clarity</span>
+                            <span className="text-slate-900 text-xs">{q.evaluation.clarity}/10</span>
+                          </div>
+                          <div className="p-2 rounded bg-white border border-slate-200">
+                            <span className="text-[10px] text-slate-500 block uppercase">Structure</span>
+                            <span className="text-slate-900 text-xs">{q.evaluation.structure}/10</span>
+                          </div>
+                          <div className="p-2 rounded bg-white border border-slate-200">
+                            <span className="text-[10px] text-slate-500 block uppercase">Conciseness</span>
+                            <span className="text-slate-900 text-xs">{q.evaluation.conciseness}/10</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {q.evaluation?.strengths?.length ? (
+                        <div className="text-emerald-900 text-xs space-y-1">
+                          <span className="font-bold block">Question Strengths:</span>
+                          {q.evaluation.strengths.map((s, i) => (
+                            <div key={i} className="flex items-center gap-1.5">
+                              <span className="text-emerald-500">•</span>
+                              <span>{s}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      {q.evaluation?.weaknesses?.length ? (
+                        <div className="text-amber-900 text-xs space-y-1">
+                          <span className="font-bold block">Areas to Improve:</span>
+                          {q.evaluation.weaknesses.map((w, i) => (
+                            <div key={i} className="flex items-center gap-1.5">
+                              <span className="text-amber-500">•</span>
+                              <span>{w}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200">
         <Link href={`/history/${sessionId}`} className="w-full sm:w-auto">
           <Button variant="outline" className="w-full gap-2">
+<<<<<<< HEAD
             <FileText className="w-4 h-4" />
             View Full Q&A Transcript
+=======
+            <History className="w-4 h-4" />
+            View History
+          </Button>
+        </Link>
+        <Link href="/setup" className="w-full sm:w-auto">
+          <Button size="lg" className="w-full gap-2 px-8">
+            <PlayCircle className="w-5 h-5" />
+            Practice Another Interview
+>>>>>>> origin/main
           </Button>
         </Link>
         <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -298,7 +497,7 @@ function ResultsContent() {
           <Link href="/setup" className="w-full sm:w-auto">
             <Button size="lg" className="w-full gap-2 px-8">
               <PlayCircle className="w-5 h-5" />
-              Practice Another Interview
+              Practice Another
             </Button>
           </Link>
         </div>

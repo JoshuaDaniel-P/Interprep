@@ -51,8 +51,13 @@ const typeOptions: OptionItem<InterviewType>[] = [
 ];
 
 const modeOptions: OptionItem<InterviewMode>[] = [
+<<<<<<< HEAD
+  { value: "Text", label: "Text Interview", description: "Interactive text-based adaptive Q&A" },
+  { value: "Voice", label: "Voice Interview", description: "Browser Speech-to-Text & AI Voice Questions" },
+=======
   { value: "Text", label: "Text Interview", description: "Interactive real-time adaptive Q&A workspace" },
-  { value: "Voice", label: "Voice Interview", description: "Browser Speech-to-Text mic & AI Voice Questions" },
+  { value: "Voice", label: "Voice Interview", description: "Voice mode coming soon", disabled: true },
+>>>>>>> origin/main
 ];
 
 const difficultyOptions: OptionItem<Difficulty>[] = [
@@ -74,7 +79,7 @@ const difficultyOptions: OptionItem<Difficulty>[] = [
   {
     value: "Adaptive",
     label: "Adaptive (Smart)",
-    description: "Dynamically raises difficulty on strong answers and adjusts when struggling.",
+    description: "Dynamically raises difficulty on strong answers and adjusts when struggling. Dynamic follow-ups.",
   },
 ];
 
@@ -82,8 +87,7 @@ const questionLengthOptions: OptionItem<number>[] = [
   { value: 0, label: "Stream Auto-Tuned", description: "Auto-tuned questions based on selected stream (4–6 Qs)" },
   { value: 3, label: "3 Questions (Quick)", description: "Fast mock interview session" },
   { value: 5, label: "5 Questions (Standard)", description: "Standard balanced evaluation" },
-  { value: 7, label: "7 Questions (Deep Dive)", description: "In-depth drill" },
-  { value: 15, label: "15 Questions (Full Rigor)", description: "Full simulated technical screening" },
+  { value: 7, label: "7 Questions (Deep Dive)", description: "Comprehensive pressure test" },
 ];
 
 export function InterviewSetupForm() {
@@ -98,13 +102,18 @@ export function InterviewSetupForm() {
     experienceLevel: "2–5 years",
     interviewType: "Mixed",
     mode: "Text",
-    difficulty: "Adaptive",
+<<<<<<< HEAD
+    difficulty: "Realistic",
     questionCount: 0,
-    targetQuestionsCount: 0,
+=======
+    difficulty: "Adaptive",
+    targetQuestionsCount: 15,
+>>>>>>> origin/main
   });
 
   const [isStarting, setIsStarting] = useState(false);
 
+  // Sync with profile defaults if available
   useEffect(() => {
     if (profile?.targetGoal) {
       setConfig((prev) => ({
@@ -119,14 +128,15 @@ export function InterviewSetupForm() {
     e.preventDefault();
     setIsStarting(true);
 
-    const qCount = config.questionCount || 0;
+<<<<<<< HEAD
+=======
     const finalConfig: InterviewConfig = {
       ...config,
       company: (config.company || "").trim() || config.companyType,
-      questionCount: qCount,
-      targetQuestionsCount: qCount > 0 ? qCount : undefined,
+      targetQuestionsCount: 15,
     };
 
+>>>>>>> origin/main
     if (typeof window !== "undefined") {
       sessionStorage.setItem("preppilot_active_config", JSON.stringify(finalConfig));
     }
@@ -226,20 +236,7 @@ export function InterviewSetupForm() {
         </Card>
       </div>
 
-      {/* 5. Interview Difficulty */}
-      <Card>
-        <CardContent className="p-6">
-          <SelectCardGroup
-            label="5. Interview Difficulty"
-            description="Select how the AI interviewer evaluates answers and adapts follow-up depth."
-            options={difficultyOptions}
-            selectedValue={config.difficulty}
-            onChange={(difficulty) => setConfig((prev) => ({ ...prev, difficulty }))}
-            columns={2}
-          />
-        </CardContent>
-      </Card>
-
+<<<<<<< HEAD
       {/* 6. Question Count & Interview Mode */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -268,6 +265,59 @@ export function InterviewSetupForm() {
           </CardContent>
         </Card>
       </div>
+=======
+      {/* 5. Interview Difficulty (Requirement 1) */}
+      <Card>
+        <CardContent className="p-6">
+          <SelectCardGroup
+            label="5. Interview Difficulty"
+            description="Select how the AI interviewer evaluates answers and adapts follow-up depth."
+            options={difficultyOptions}
+            selectedValue={config.difficulty}
+            onChange={(difficulty) => setConfig((prev) => ({ ...prev, difficulty }))}
+            columns={2}
+          />
+        </CardContent>
+      </Card>
+>>>>>>> origin/main
+
+      {/* 6. Mode & Interview Length */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <SelectCardGroup
+              label="6. Interview Mode"
+              description="Choose how you want to conduct the interview."
+              options={modeOptions}
+              selectedValue={config.mode}
+              onChange={(mode) => setConfig((prev) => ({ ...prev, mode }))}
+              columns={2}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="flex flex-col justify-center">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">
+              7. Mock Interview Length
+            </h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Comprehensive realistic interview standard (~15 questions).
+            </p>
+            <div className="p-4 rounded-xl bg-brand-50/70 border border-brand-200/80 flex items-center justify-between">
+              <div>
+                <span className="font-bold text-sm text-brand-950 block">Target ~15 Questions</span>
+                <span className="text-xs text-brand-800">
+                  Includes candidate project deep-dives, architecture, behavioral STAR, and Yes/No screenings.
+                </span>
+              </div>
+              <span className="px-3 py-1 bg-brand-600 text-white rounded-full text-xs font-bold shrink-0">
+                15 Qs
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Summary Banner & Action */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
@@ -278,7 +328,11 @@ export function InterviewSetupForm() {
           <div>
             <h3 className="text-sm font-bold text-gray-900">Summary Configuration</h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              {config.targetRole} • {config.company || config.companyType} • {config.difficulty} Difficulty • {config.mode} Mode
+<<<<<<< HEAD
+              {config.targetRole} • {config.companyType} • {config.interviewType} ({config.difficulty}) • {config.mode} Mode
+=======
+              {config.targetRole} • {config.company || config.companyType} • {config.difficulty} Difficulty (~15 Questions)
+>>>>>>> origin/main
             </p>
           </div>
         </div>

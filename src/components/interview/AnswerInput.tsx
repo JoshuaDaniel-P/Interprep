@@ -3,8 +3,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Send, Lightbulb, Check, X, RefreshCw, AlertCircle, Award, Mic, MicOff } from "lucide-react";
+<<<<<<< HEAD
+import { Send, Lightbulb, Mic, MicOff } from "lucide-react";
+=======
+import { Send, Lightbulb, Check, X, RefreshCw, AlertCircle, Award } from "lucide-react";
 import { useInterview } from "@/context/InterviewContext";
+>>>>>>> origin/main
 
 interface AnswerInputProps {
   onSubmit: (answerText: string) => void;
@@ -97,11 +101,14 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
     e.preventDefault();
     if (!text.trim() || isSubmitting) return;
 
+<<<<<<< HEAD
     if (isListening && recognitionRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
     }
 
+    onSubmit(text.trim());
+=======
     const answer = text.trim();
     onSubmit(answer);
     setText("");
@@ -109,11 +116,8 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
 
   const handleQuickYesNo = (val: "Yes" | "No") => {
     if (isSubmitting) return;
-    if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
     onSubmit(val);
+>>>>>>> origin/main
     setText("");
   };
 
@@ -181,9 +185,10 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
         {/* Candidate Text Answer Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center justify-between">
+<<<<<<< HEAD
             <div className="flex items-center gap-2">
               <label className="text-sm font-semibold text-gray-900 block">
-                {isYesNoQuestion ? "Or elaborate your response:" : "Your Response:"}
+                Your Answer
               </label>
               {isListening && (
                 <span className="inline-flex items-center gap-1 text-xs text-rose-600 font-bold animate-pulse">
@@ -192,6 +197,11 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
                 </span>
               )}
             </div>
+=======
+            <label className="text-sm font-semibold text-gray-900 block">
+              {isYesNoQuestion ? "Or elaborate your response:" : "Your Response:"}
+            </label>
+>>>>>>> origin/main
             <span className="text-xs text-gray-400 font-mono">
               {text.length} characters
             </span>
@@ -202,23 +212,29 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
             value={text}
             onChange={(e) => setText(e.target.value)}
             disabled={isSubmitting}
+<<<<<<< HEAD
+            placeholder="Type or click the microphone to speak your response. Structure with STAR (Situation, Task, Action, Result)..."
+            className="w-full p-4 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 resize-y placeholder:text-gray-400 font-sans"
+=======
             placeholder={
               isYesNoQuestion
-                ? "You can also explain your experience directly (or speak your answer)..."
-                : "Type or click the microphone to speak your response. Structure with STAR (Situation, Task, Action, Result)..."
+                ? "You can also explain your experience directly (e.g., 'Yes, I used Git flow with daily feature branches...')"
+                : "Type your response clearly. Focus on specific technical decisions, challenges, trade-offs, and outcomes..."
             }
             className="w-full p-4 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 resize-y placeholder:text-gray-400 font-sans leading-relaxed"
+>>>>>>> origin/main
           />
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
               <span>
-                Tip: Clearly state your role, the trade-offs considered, and measurable impact (STAR method).
+                Tip: Clearly state your role, the trade-offs considered, and measurable impact.
               </span>
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
+<<<<<<< HEAD
               <button
                 type="button"
                 onClick={toggleVoiceInput}
@@ -233,8 +249,8 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
                 {isListening ? <MicOff className="w-4 h-4 text-rose-600 animate-pulse" /> : <Mic className="w-4 h-4 text-slate-600" />}
                 <span>{isListening ? "Stop Voice" : "Speak Answer"}</span>
               </button>
-
-              {currentQuestionIndex >= 3 && (
+=======
+              {currentQuestionIndex >= 4 && (
                 <Button
                   type="button"
                   variant="outline"
@@ -247,15 +263,22 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
                   Finish & Evaluate ({currentQuestionIndex} Qs)
                 </Button>
               )}
+>>>>>>> origin/main
 
               <Button
                 type="submit"
                 size="md"
                 disabled={!text.trim() || isSubmitting}
                 isLoading={isSubmitting}
+<<<<<<< HEAD
+                className="flex-1 sm:flex-initial px-6 gap-2"
+              >
+                <span>Submit Answer</span>
+=======
                 className="w-full sm:w-auto px-6 gap-2"
               >
                 <span>{isSubmitting ? "Evaluating..." : "Submit Answer"}</span>
+>>>>>>> origin/main
                 <Send className="w-4 h-4" />
               </Button>
             </div>

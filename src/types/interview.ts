@@ -59,7 +59,9 @@ export interface InterviewConfig {
   interviewType: InterviewType;
   mode: InterviewMode;
   difficulty: Difficulty;
+<<<<<<< HEAD
   questionCount?: number;
+=======
   targetQuestionsCount?: number;
 }
 
@@ -75,6 +77,7 @@ export interface QuestionEvaluation {
   weaknesses: string[];
   missingInformation: string[];
   feedback?: string;
+>>>>>>> origin/main
 }
 
 export interface InterviewQuestion {
@@ -156,6 +159,7 @@ export interface InterviewSession {
   userId?: string;
   createdAt: string;
   completedAt?: string;
+  userId?: string;
   config: InterviewConfig;
   status: InterviewStatus;
   questions: InterviewQuestion[];
@@ -164,10 +168,13 @@ export interface InterviewSession {
   currentQuestionIndex: number;
   timeElapsedSeconds: number;
   score?: number;
+<<<<<<< HEAD
   evaluation?: any;
+=======
   categoryScores?: CategoryScores;
   strengths?: string[];
   weaknesses?: string[];
   improvements?: string[];
   recommendedPreparationAreas?: string[];
+>>>>>>> origin/main
 }
