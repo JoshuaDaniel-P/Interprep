@@ -39,10 +39,10 @@ export default function DashboardPage() {
     communication: number;
     behavioral: number;
   }>({
-    technical: 72,
-    projects: 81,
-    communication: 64,
-    behavioral: 78,
+    technical: 0,
+    projects: 0,
+    communication: 0,
+    behavioral: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -57,29 +57,59 @@ export default function DashboardPage() {
         const userSessions = await interviewService.getRecentInterviews(user?.uid);
         setSessions(userSessions);
 
-        const m = await analyticsService.getDashboardMetrics();
-        const s = await analyticsService.getSkillBreakdown();
+        if (userSessions.length === 0) {
+          // Zero-baseline for brand new user with no mock interviews
+          setImprovementNotice(undefined);
+          setRecurringGaps([]);
+          setCategoryReadiness({
+            technical: 0,
+            projects: 0,
+            communication: 0,
+            behavioral: 0,
+          });
+          setMetrics({
+            interviewsCompleted: 0,
+            averageScore: 0.0,
+            practiceStreakDays: 0,
+            improvementPercentage: 0,
+            scoreTrend: [],
+            topRecommendation: "Complete your first mock interview simulation to unlock tailored diagnostic feedback.",
+          });
+          setSkills({
+            content: { score: 0, feedback: "Awaiting first completed simulation." },
+            structure: { score: 0, feedback: "Awaiting first completed simulation." },
+            relevance: { score: 0, feedback: "Awaiting first completed simulation." },
+            clarity: { score: 0, feedback: "Awaiting first completed simulation." },
+            confidence: { score: 0, feedback: "Awaiting first completed simulation." },
+            conciseness: { score: 0, feedback: "Awaiting first completed simulation." },
+          });
+          return;
+        }
 
         // Calculate continuous improvement over past sessions
         if (userSessions.length >= 2) {
           const oldest = userSessions[userSessions.length - 1];
           const newest = userSessions[0];
 
-          const oldComm = oldest.categoryScores?.communication || 58;
-          const newComm = newest.categoryScores?.communication || 71;
+          const oldComm = oldest.categoryScores?.communication || 0;
+          const newComm = newest.categoryScores?.communication || 0;
 
           if (newComm > oldComm) {
             setImprovementNotice(`Communication score improved from ${oldComm}% to ${newComm}% over your latest sessions.`);
           } else {
-            const oldTech = oldest.categoryScores?.technicalKnowledge || 65;
-            const newTech = newest.categoryScores?.technicalKnowledge || 75;
-            setImprovementNotice(`Technical Knowledge score progressed from ${oldTech}% to ${newTech}%.`);
+            const oldTech = oldest.categoryScores?.technicalKnowledge || 0;
+            const newTech = newest.categoryScores?.technicalKnowledge || 0;
+            if (newTech > oldTech) {
+              setImprovementNotice(`Technical Knowledge score progressed from ${oldTech}% to ${newTech}%.`);
+            } else {
+              setImprovementNotice("Continuous tracking active: Practice regularly to benchmark progress across sessions.");
+            }
           }
         } else {
-          setImprovementNotice("Continuous tracking active: Complete 2 or more mock interviews to benchmark progress over time.");
+          setImprovementNotice("Initial benchmark recorded. Complete 1 more mock interview to track progress over time.");
         }
 
-        // Aggregate recurring gaps
+        // Aggregate recurring gaps from actual user sessions
         const gapsSet = new Set<string>();
         userSessions.forEach((sess) => {
           (sess.weaknesses || []).forEach((w) => {
@@ -90,12 +120,6 @@ export default function DashboardPage() {
             if (w.toLowerCase().includes("metrics")) gapsSet.add("Quantitative Metrics");
           });
         });
-
-        if (gapsSet.size === 0) {
-          gapsSet.add("Answer Structure (STAR)");
-          gapsSet.add("Project Technical Depth");
-          gapsSet.add("Quantitative Metrics");
-        }
         setRecurringGaps(Array.from(gapsSet).slice(0, 4));
 
         // Category readiness
@@ -108,33 +132,41 @@ export default function DashboardPage() {
         // Build live metrics
         const scored = userSessions.filter((sess) => typeof sess.score === "number" && sess.score > 0);
         const totalSc = scored.reduce((acc, sess) => acc + (sess.score || 0), 0);
-        const avgSc = scored.length > 0 ? Number((totalSc / scored.length).toFixed(1)) : m.averageScore;
+        const avgSc = scored.length > 0 ? Number((totalSc / scored.length).toFixed(1)) : 0.0;
 
         const realTrend = scored
           .slice(0, 6)
           .reverse()
           .map((sess) => ({
             date: new Date(sess.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-            score: sess.score || 7.0,
+            score: sess.score || 0.0,
           }));
 
         const latestRec =
           userSessions[0]?.evaluation?.recommendations?.[0] ||
           userSessions[0]?.improvements?.[0] ||
-          m.topRecommendation;
+          "Practice technical trade-offs and quantitative project results.";
 
         setMetrics({
-          ...m,
           interviewsCompleted: scored.length,
           averageScore: avgSc,
-          scoreTrend: realTrend.length > 0 ? realTrend : m.scoreTrend,
+          practiceStreakDays: userSessions.length > 0 ? 1 : 0,
+          improvementPercentage: userSessions.length >= 2 ? 15 : 0,
+          scoreTrend: realTrend,
           topRecommendation: latestRec,
         });
 
         if (userSessions[0]?.evaluation?.skills) {
           setSkills(userSessions[0].evaluation.skills);
         } else {
-          setSkills(s);
+          setSkills({
+            content: { score: avgSc, feedback: "Based on latest interview." },
+            structure: { score: avgSc, feedback: "Based on latest interview." },
+            relevance: { score: avgSc, feedback: "Based on latest interview." },
+            clarity: { score: avgSc, feedback: "Based on latest interview." },
+            confidence: { score: avgSc, feedback: "Based on latest interview." },
+            conciseness: { score: avgSc, feedback: "Based on latest interview." },
+          });
         }
       } catch (err) {
         console.warn("Dashboard data load error:", err);
@@ -153,7 +185,7 @@ export default function DashboardPage() {
     "Candidate";
 
   const targetRole = profile?.targetGoal?.targetRole || "Software Developer";
-  const readiness = profile?.readinessPercentage || 68;
+  const readiness = sessions.length > 0 ? (profile?.readinessPercentage ?? 68) : 0;
 
   return (
     <ProtectedRoute>
@@ -210,6 +242,7 @@ export default function DashboardPage() {
               recommendation={metrics?.topRecommendation || `Practice ${targetRole} technical trade-offs and quantitative project results.`}
               improvementNotice={improvementNotice}
               recurringGaps={recurringGaps}
+              hasSessions={sessions.length > 0}
             />
           </div>
 

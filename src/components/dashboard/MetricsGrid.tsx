@@ -38,7 +38,7 @@ export function MetricsGrid({ metrics }: MetricsGridProps) {
     {
       title: "Overall Improvement",
       subtitle: "Skill growth baseline",
-      value: `+${metrics.improvementPercentage}%`,
+      value: metrics.improvementPercentage > 0 ? `+${metrics.improvementPercentage}%` : "0%",
       unit: "gain",
       icon: TrendingUp,
       iconColor: "text-emerald-600",

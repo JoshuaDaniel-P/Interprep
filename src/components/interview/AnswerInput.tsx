@@ -23,6 +23,7 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
   const [text, setText] = useState("");
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const baseTextRef = useRef<string>("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -32,19 +33,27 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = "en-US";
+        recognition.lang = "en-IN"; // Indian English Speech-to-Text
 
         recognition.onresult = (event: any) => {
-          let currentTranscript = "";
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            currentTranscript += event.results[i][0].transcript;
+          let finalSessionTranscript = "";
+          let interimSessionTranscript = "";
+
+          for (let i = 0; i < event.results.length; i++) {
+            const part = event.results[i][0]?.transcript || "";
+            if (event.results[i].isFinal) {
+              finalSessionTranscript += " " + part;
+            } else {
+              interimSessionTranscript += " " + part;
+            }
           }
-          if (currentTranscript) {
-            setText((prev) => {
-              const trimmed = prev.trim();
-              return trimmed ? `${trimmed} ${currentTranscript}` : currentTranscript;
-            });
-          }
+
+          const base = baseTextRef.current;
+          const combined = `${base} ${finalSessionTranscript} ${interimSessionTranscript}`
+            .replace(/\s+/g, " ")
+            .trim();
+
+          setText(combined);
         };
 
         recognition.onerror = (e: any) => {
@@ -81,6 +90,8 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
       recognitionRef.current.stop();
       setIsListening(false);
     } else {
+      // Capture the current textarea content before voice recognition starts
+      baseTextRef.current = text.trim();
       try {
         recognitionRef.current.start();
         setIsListening(true);
@@ -102,12 +113,18 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
       setIsListening(false);
     }
 
+    baseTextRef.current = "";
     onSubmit(text.trim());
     setText("");
   };
 
   const handleQuickYesNo = (val: "Yes" | "No") => {
     if (isSubmitting) return;
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+    baseTextRef.current = "";
     onSubmit(val);
     setText("");
   };

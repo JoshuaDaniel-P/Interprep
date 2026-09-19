@@ -19,6 +19,7 @@ export function PreparationReadinessCard({
   targetRole,
   readinessPercentage,
 }: PreparationReadinessCardProps) {
+
   return (
     <div
       className="glass-primary p-8 sm:p-12 lg:p-14 rounded-[36px] relative overflow-hidden"

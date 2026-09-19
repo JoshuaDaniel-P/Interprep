@@ -1,18 +1,46 @@
 import React from "react";
-import { Lightbulb, ArrowRight, TrendingUp, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { Lightbulb, ArrowRight, TrendingUp, AlertTriangle, PlayCircle } from "lucide-react";
 
 interface ImprovementInsightCardProps {
   recommendation: string;
   improvementNotice?: string;
   recurringGaps?: string[];
+  hasSessions?: boolean;
 }
 
 export function ImprovementInsightCard({
   recommendation,
   improvementNotice,
   recurringGaps = [],
+  hasSessions = true,
 }: ImprovementInsightCardProps) {
+  if (!hasSessions) {
+    return (
+      <div
+        className="glass-primary p-6 sm:p-8 rounded-[30px] flex flex-col sm:flex-row items-center justify-between gap-6 border-white/95"
+        data-config='{"refraction": 0.22, "edgeHighlight": 0.85, "specular": 0.8, "zRadius": 20, "cornerRadius": 30}'
+      >
+        <div className="space-y-1 text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-2 text-slate-900 font-black text-sm sm:text-base">
+            <Lightbulb className="w-5 h-5 text-amber-500" />
+            <span>Diagnostic Feedback & Growth Trajectory</span>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-w-xl">
+            Complete your first mock interview simulation to unlock tailored diagnostic feedback, communication insights, and recurring knowledge gaps.
+          </p>
+        </div>
+        <Link
+          href="/interviews/setup"
+          className="glass-button-primary px-6 py-3 text-xs sm:text-sm font-black gap-2 inline-flex items-center shrink-0 shadow-lg shadow-blue-500/20"
+        >
+          <PlayCircle className="w-4 h-4" />
+          <span>Start Simulation</span>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Continuous Progress Tracking Green Liquid Glass Panel */}
