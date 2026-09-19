@@ -104,25 +104,6 @@ export default function LoginPage() {
             </div>
           )}
 
-<<<<<<< Updated upstream
-          <CardContent className="p-6 space-y-4">
-            {!isFirebaseConfigured && (
-              <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200 text-blue-900 text-xs flex items-start gap-2.5">
-                <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <p className="font-semibold text-blue-900">Zero-Config Mode Active</p>
-                  <p className="text-blue-700 leading-relaxed">
-                    Database credentials are not required. You can sign in with any email, click Google, or use Quick Demo Access.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {errorMessage && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>{errorMessage}</span>
-=======
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-xs font-extrabold text-slate-700 block mb-1.5">
@@ -138,7 +119,6 @@ export default function LoginPage() {
                   className="w-full pl-10 pr-4 py-2.5 text-sm bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-900"
                   required
                 />
->>>>>>> Stashed changes
               </div>
             </div>
 
