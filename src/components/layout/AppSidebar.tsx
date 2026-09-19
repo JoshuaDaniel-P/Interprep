@@ -29,7 +29,6 @@ const mainNavigation: NavigationItem[] = [
 
 const secondaryNavigation: NavigationItem[] = [
   { name: "Onboarding Profile", href: "/onboarding", icon: UserCheck },
-  { name: "Admin Portal", href: "/admin", icon: ShieldCheck },
 ];
 
 export function AppSidebar() {

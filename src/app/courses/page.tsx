@@ -14,10 +14,10 @@ export default function CoursesCatalogPage() {
       <div className="space-y-6 max-w-6xl mx-auto">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-            Preparation Roadmaps & Courses
+            Interview Simulation Roadmaps
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Structured skill modules and interview topic roadmaps across 5 initial tracks.
+            Progressive mock interview practice tracks across all engineering branches, data domains, and tech roles.
           </p>
         </div>
 
@@ -42,9 +42,9 @@ export default function CoursesCatalogPage() {
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 font-medium">
-                  <span>{course.modules.length} Modules</span>
+                  <span>{course.modules.length} Core Modules</span>
                   <span>
-                    {course.modules.reduce((acc, m) => acc + m.lessons.length, 0)} Lessons
+                    {course.modules.reduce((acc, m) => acc + m.lessons.length, 0)} Practice Stages
                   </span>
                 </div>
               </CardContent>
@@ -52,7 +52,7 @@ export default function CoursesCatalogPage() {
               <div className="p-6 pt-0">
                 <Link href={`/courses/${encodeURIComponent(course.roleTrack)}`}>
                   <Button variant="outline" className="w-full gap-2 justify-between">
-                    <span>View Roadmap</span>
+                    <span>Explore Practice Track</span>
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>

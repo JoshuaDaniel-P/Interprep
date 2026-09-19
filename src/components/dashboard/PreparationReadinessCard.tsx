@@ -23,10 +23,10 @@ export function PreparationReadinessCard({
   categoryReadiness,
 }: PreparationReadinessCardProps) {
   const categories = [
-    { label: "Technical", val: categoryReadiness?.technical ?? 72, icon: Code2 },
-    { label: "Projects", val: categoryReadiness?.projects ?? 81, icon: FolderGit2 },
-    { label: "Communication", val: categoryReadiness?.communication ?? 64, icon: MessageSquare },
-    { label: "Behavioral", val: categoryReadiness?.behavioral ?? 78, icon: Users },
+    { label: "Technical", val: categoryReadiness?.technical ?? 0, icon: Code2 },
+    { label: "Projects", val: categoryReadiness?.projects ?? 0, icon: FolderGit2 },
+    { label: "Communication", val: categoryReadiness?.communication ?? 0, icon: MessageSquare },
+    { label: "Behavioral", val: categoryReadiness?.behavioral ?? 0, icon: Users },
   ];
 
   return (

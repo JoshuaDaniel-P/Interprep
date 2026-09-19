@@ -60,29 +60,34 @@ export function calculateReadiness(
   const courseScore = Math.round((courseCompletionPercentage / 100) * 20);
 
   // 3. Interview Performance (Max 60 points)
-  const tech = interviewCategoryScores?.technicalKnowledge ?? 72;
-  const prob = interviewCategoryScores?.problemSolving ?? 70;
-  const proj = interviewCategoryScores?.projects ?? 80;
-  const comm = interviewCategoryScores?.communication ?? 65;
-  const behav = interviewCategoryScores?.behavioral ?? 75;
-  const role = interviewCategoryScores?.roleKnowledge ?? 75;
-  const comp = interviewCategoryScores?.companyAwareness ?? 70;
+  const hasInterviewData = Boolean(
+    interviewCategoryScores &&
+    Object.values(interviewCategoryScores).some((val) => typeof val === "number" && val > 0)
+  );
+
+  const tech = hasInterviewData ? (interviewCategoryScores?.technicalKnowledge ?? 0) : 0;
+  const prob = hasInterviewData ? (interviewCategoryScores?.problemSolving ?? 0) : 0;
+  const proj = hasInterviewData ? (interviewCategoryScores?.projects ?? 0) : 0;
+  const comm = hasInterviewData ? (interviewCategoryScores?.communication ?? 0) : 0;
+  const behav = hasInterviewData ? (interviewCategoryScores?.behavioral ?? 0) : 0;
+  const role = hasInterviewData ? (interviewCategoryScores?.roleKnowledge ?? 0) : 0;
+  const comp = hasInterviewData ? (interviewCategoryScores?.companyAwareness ?? 0) : 0;
 
   // Weighted interview score (0 to 100)
-  const weightedInterviewRating =
-    tech * 0.25 +
-    prob * 0.20 +
-    proj * 0.20 +
-    comm * 0.15 +
-    behav * 0.10 +
-    ((role + comp) / 2) * 0.10;
+  const weightedInterviewRating = hasInterviewData
+    ? tech * 0.25 +
+      prob * 0.20 +
+      proj * 0.20 +
+      comm * 0.15 +
+      behav * 0.10 +
+      ((role + comp) / 2) * 0.10
+    : 0;
 
   const interviewScorePoints = Math.round((weightedInterviewRating / 100) * 60);
 
-  const totalReadiness = Math.min(
-    Math.max(profileScore + courseScore + interviewScorePoints, 10),
-    100
-  );
+  const totalReadiness = hasInterviewData
+    ? Math.min(Math.max(profileScore + courseScore + interviewScorePoints, 0), 100)
+    : 0;
 
   const categoryReadiness: CategoryReadinessBreakdown = {
     technical: Math.round(tech),

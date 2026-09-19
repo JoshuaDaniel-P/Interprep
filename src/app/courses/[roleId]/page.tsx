@@ -91,7 +91,7 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
           <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
-                Course Preparedness
+                Simulation Preparedness
               </span>
               <p className="text-2xl font-extrabold text-slate-900 mt-1">
                 {completionPercentage}% Complete
@@ -101,7 +101,7 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
             <div className="w-full sm:w-1/2 space-y-2">
               <ProgressBar value={completionPercentage} barClassName="bg-brand-600 h-3" />
               <p className="text-xs text-slate-500 text-right">
-                {completedLessonIds.length} of {totalLessons} lessons completed
+                {completedLessonIds.length} of {totalLessons} simulation stages mastered
               </p>
             </div>
           </CardContent>
@@ -109,10 +109,10 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
 
         {/* Main Content Area */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Lesson Modules */}
+          {/* Left Column: Simulation Stages */}
           <div className="space-y-4 lg:col-span-1">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Course Modules
+              Simulation Modules
             </h3>
 
             {course.modules.map((module) => (
@@ -158,7 +158,7 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
             ))}
           </div>
 
-          {/* Right Column: Active Lesson Content */}
+          {/* Right Column: Active Simulation Stage */}
           <div className="lg:col-span-2">
             {activeLesson && (
               <Card>
@@ -170,12 +170,12 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Lesson Summary</h4>
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Simulation Focus & Objective</h4>
                     <p className="text-sm text-slate-800 mt-1 leading-relaxed">{activeLesson.summary}</p>
                   </div>
 
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Key Topics Covered</h4>
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Evaluated Skills & Topics</h4>
                     <div className="flex flex-wrap gap-2">
                       {activeLesson.keyTopics.map((topic, i) => (
                         <span key={i} className="px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
@@ -188,7 +188,7 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
                   <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-2">
                     <div className="flex items-center gap-2 text-amber-900 font-bold text-xs uppercase tracking-wider">
                       <Lightbulb className="w-4 h-4 text-amber-600" />
-                      Mock Interview Practice Prompt
+                      Active Simulation Challenge Prompt
                     </div>
                     <p className="text-sm text-amber-950 font-medium leading-relaxed">
                       &ldquo;{activeLesson.practicePrompt}&rdquo;
@@ -202,12 +202,12 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
                       className="gap-2"
                     >
                       <CheckCircle className="w-4 h-4" />
-                      {completedLessonIds.includes(activeLesson.id) ? "Mark Incomplete" : "Mark Completed"}
+                      {completedLessonIds.includes(activeLesson.id) ? "Mark Incomplete" : "Mark Mastered"}
                     </Button>
 
                     <Button variant="outline" className="gap-2 bg-brand-50/80 text-brand-700 border-brand-200 hover:bg-brand-100" onClick={() => handlePracticeTopic(activeLesson)}>
                       <Rocket className="w-4 h-4 text-brand-600" />
-                      Practice This Topic
+                      Launch Simulation Challenge
                     </Button>
                   </div>
                 </CardContent>

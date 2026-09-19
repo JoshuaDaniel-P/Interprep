@@ -70,7 +70,7 @@ export class InterviewService implements IInterviewService {
       return localSessions;
     }
 
-    return mockRecentInterviews;
+    return [];
   }
 
   async getInterviewById(id: string, userId?: string): Promise<InterviewSession | StoredInterviewRecord | null> {

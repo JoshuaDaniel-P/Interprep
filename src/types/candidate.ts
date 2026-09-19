@@ -1,9 +1,20 @@
 export type TargetRoleTrack =
+  | "Software Engineer"
   | "Software Developer"
+  | "Frontend Developer"
+  | "Backend Developer"
+  | "DevOps & Cloud Engineer"
   | "Data Scientist"
+  | "Data Analyst"
+  | "Embedded Systems Engineer"
+  | "Mechanical Design Engineer"
+  | "Civil & Structural Engineer"
   | "UI Designer"
   | "Product Manager"
-  | "College Lecturer";
+  | "College Lecturer"
+  | "Marketing"
+  | "Sales"
+  | string;
 
 export type EmploymentStatus = "Student" | "Graduate" | "Employed" | "Unemployed";
 

@@ -1,6 +1,24 @@
 import { UserDashboardMetrics, UserProfile } from "@/types/user";
 import { SkillBreakdownScores } from "@/types/evaluation";
-import { mockDashboardMetrics, mockUserProfile, mockSkillBreakdown } from "@/data/mock/dashboard.mock";
+import { mockUserProfile } from "@/data/mock/dashboard.mock";
+
+export const zeroDashboardMetrics: UserDashboardMetrics = {
+  interviewsCompleted: 0,
+  averageScore: 0.0,
+  practiceStreakDays: 0,
+  improvementPercentage: 0,
+  scoreTrend: [],
+  topRecommendation: "Complete your first mock interview simulation to unlock tailored diagnostic feedback.",
+};
+
+export const zeroSkillBreakdown: SkillBreakdownScores = {
+  content: { score: 0, feedback: "Awaiting first completed simulation." },
+  structure: { score: 0, feedback: "Awaiting first completed simulation." },
+  relevance: { score: 0, feedback: "Awaiting first completed simulation." },
+  clarity: { score: 0, feedback: "Awaiting first completed simulation." },
+  confidence: { score: 0, feedback: "Awaiting first completed simulation." },
+  conciseness: { score: 0, feedback: "Awaiting first completed simulation." },
+};
 
 export interface IAnalyticsService {
   getUserProfile(): Promise<UserProfile>;
@@ -14,11 +32,11 @@ export class MockAnalyticsService implements IAnalyticsService {
   }
 
   async getDashboardMetrics(): Promise<UserDashboardMetrics> {
-    return Promise.resolve(mockDashboardMetrics);
+    return Promise.resolve(zeroDashboardMetrics);
   }
 
   async getSkillBreakdown(): Promise<SkillBreakdownScores> {
-    return Promise.resolve(mockSkillBreakdown);
+    return Promise.resolve(zeroSkillBreakdown);
   }
 }
 

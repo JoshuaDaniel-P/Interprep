@@ -36,8 +36,12 @@ const roleOptions: OptionItem<TargetRole>[] = [
   { value: "Software Developer", label: "Software Developer", description: "Application programming, data structures & APIs" },
   { value: "Frontend Developer", label: "Frontend Developer", description: "React, browser APIs, state & performance" },
   { value: "Backend Developer", label: "Backend Developer", description: "REST/GraphQL, microservices, databases & queues" },
+  { value: "DevOps & Cloud Engineer", label: "DevOps & Cloud Engineer", description: "CI/CD, Kubernetes, Docker, Terraform & cloud infrastructure" },
   { value: "Data Scientist", label: "Data Scientist", description: "Machine learning, feature engineering & model evaluation" },
   { value: "Data Analyst", label: "Data Analyst", description: "SQL pipelines, analytics & business metrics" },
+  { value: "Embedded Systems Engineer", label: "Embedded & IoT Engineer", description: "Microcontrollers, RTOS, firmware, C/C++ & hardware protocols" },
+  { value: "Mechanical Design Engineer", label: "Mechanical Design Engineer", description: "CAD/CAM, FEA simulation, GD&T, thermodynamics & DFMA" },
+  { value: "Civil & Structural Engineer", label: "Civil & Structural Engineer", description: "RCC design, structural analysis, geotechnical & site execution" },
   { value: "UI Designer", label: "UI/UX Designer", description: "Design systems, user research, wireframes & WCAG" },
   { value: "College Lecturer", label: "College Lecturer", description: "Curriculum delivery, pedagogical clarity & academic concepts" },
   { value: "Product Manager", label: "Product Manager", description: "Product discovery, execution & trade-offs" },
@@ -212,6 +216,130 @@ function getOrganizationOptions(role: TargetRole): {
       ],
       inputLabel: "Target Company / Brand (Optional)",
       inputPlaceholder: "e.g., Salesforce, HubSpot, Zomato, Zoho...",
+    };
+  }
+
+  if (role === "Embedded Systems Engineer") {
+    return {
+      label: "2. Hardware / Embedded Domain",
+      description: "Select the embedded hardware environment you are preparing for.",
+      options: [
+        {
+          value: "Startup",
+          label: "Automotive & EV Electronics",
+          description: "Embedded ECUs, CAN bus, battery management systems & AUTOSAR",
+        },
+        {
+          value: "Product Company",
+          label: "Semiconductor & Silicon Firm",
+          description: "Microcontroller firmware, silicon validation, peripheral drivers & RTOS",
+        },
+        {
+          value: "Enterprise",
+          label: "Robotics & Industrial Automation",
+          description: "Motor control, industrial PLCs, real-time sensing & ROS integration",
+        },
+        {
+          value: "Consulting",
+          label: "Consumer IoT & Wearables",
+          description: "Ultra-low power BLE firmware, battery optimization & edge sensing",
+        },
+      ],
+      inputLabel: "Target Hardware / Semiconductor OEM (Optional)",
+      inputPlaceholder: "e.g., Bosch, Texas Instruments, Qualcomm, Tesla, Intel, Ather...",
+    };
+  }
+
+  if (role === "Mechanical Design Engineer") {
+    return {
+      label: "2. Mechanical Industry / Manufacturing Domain",
+      description: "Select the engineering industry matching your design focus.",
+      options: [
+        {
+          value: "Product Company",
+          label: "Automotive & Mobility OEM",
+          description: "Chassis, powertrain, crashworthiness, sheet metal & EV packaging",
+        },
+        {
+          value: "Enterprise",
+          label: "Heavy Equipment & Machinery",
+          description: "Hydraulic systems, heavy structural fabrication & FEA validation",
+        },
+        {
+          value: "Startup",
+          label: "Precision Hardware & Consumer Electronics",
+          description: "Precision plastic injection molding, GD&T, thermal enclosures & DFMA",
+        },
+        {
+          value: "Consulting",
+          label: "Aerospace & Turbomachinery",
+          description: "High-temperature alloys, CFD aerodynamic simulation & propulsion",
+        },
+      ],
+      inputLabel: "Target Engineering / Manufacturing OEM (Optional)",
+      inputPlaceholder: "e.g., Boeing, Tata Motors, L&T, Caterpillar, Apple Hardware, ISRO...",
+    };
+  }
+
+  if (role === "Civil & Structural Engineer") {
+    return {
+      label: "2. Structural / Construction Environment",
+      description: "Select the construction and structural design sector.",
+      options: [
+        {
+          value: "Consulting",
+          label: "Structural Design Consultancy",
+          description: "High-rise RCC/steel design, STAAD/ETABS analysis & IS/ACI code compliance",
+        },
+        {
+          value: "Enterprise",
+          label: "Infrastructure & EPC Contractor",
+          description: "Metros, highways, bridges, heavy civil site execution & project control",
+        },
+        {
+          value: "Product Company",
+          label: "Geotechnical & Deep Foundations",
+          description: "Soil mechanics, piling, deep excavation shoring & soil stabilization",
+        },
+        {
+          value: "Startup",
+          label: "Real Estate & Urban Development",
+          description: "Commercial complexes, residential structural framing & BIM coordination",
+        },
+      ],
+      inputLabel: "Target Structural Consultancy / EPC Contractor (Optional)",
+      inputPlaceholder: "e.g., L&T Construction, Arup, WSP, AECOM, Shapoorji Pallonji...",
+    };
+  }
+
+  if (role === "DevOps & Cloud Engineer") {
+    return {
+      label: "2. Cloud & Infrastructure Architecture",
+      description: "Select the infrastructure scale and cloud deployment style.",
+      options: [
+        {
+          value: "Product Company",
+          label: "Cloud-Native SaaS & Hyper-Scale",
+          description: "Kubernetes clusters, multi-region high availability & distributed microservices",
+        },
+        {
+          value: "Enterprise",
+          label: "Enterprise IT & Financial Cloud",
+          description: "Strict zero-trust networking, PCI-DSS compliance & automated CI/CD gates",
+        },
+        {
+          value: "Startup",
+          label: "Fast-Paced Startup Infrastructure",
+          description: "Rapid developer velocity, GitOps ArgoCD, Docker & Terraform from 0-to-1",
+        },
+        {
+          value: "Consulting",
+          label: "Cloud Consultancy & Migration",
+          description: "On-prem to AWS/Azure migrations, FinOps cost optimization & observability",
+        },
+      ],
+      inputLabel: "Target Cloud / Tech Organization (Optional)",
+      inputPlaceholder: "e.g., AWS, Microsoft, Netflix, Datadog, Stripe, Cloudflare...",
     };
   }
 

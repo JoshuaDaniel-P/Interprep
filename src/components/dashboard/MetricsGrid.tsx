@@ -32,7 +32,7 @@ export function MetricsGrid({ metrics }: MetricsGridProps) {
     },
     {
       title: "Improvement",
-      value: `+${metrics.improvementPercentage}%`,
+      value: metrics.improvementPercentage > 0 ? `+${metrics.improvementPercentage}%` : "0%",
       unit: "overall",
       icon: TrendingUp,
       iconColor: "text-indigo-600 bg-indigo-50",

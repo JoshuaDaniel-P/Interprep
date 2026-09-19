@@ -8,7 +8,28 @@ interface PerformanceOverviewProps {
 }
 
 export function PerformanceOverview({ trendData }: PerformanceOverviewProps) {
-  if (!trendData || trendData.length === 0) return null;
+  if (!trendData || trendData.length === 0) {
+    return (
+      <Card className="h-full flex flex-col justify-between">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-brand-600" />
+            Score Trend Overview
+          </CardTitle>
+          <span className="text-xs text-gray-500 font-medium">0 Sessions</span>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <p className="text-sm font-semibold text-slate-700">No score history recorded</p>
+          <p className="text-xs text-slate-400 mt-1 max-w-xs">
+            Complete mock interviews to track your performance progression over time.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const minScore = 5.0;
   const maxScore = 10.0;
@@ -16,7 +37,7 @@ export function PerformanceOverview({ trendData }: PerformanceOverviewProps) {
   const chartWidth = 500;
 
   const points = trendData.map((d, index) => {
-    const x = (index / (trendData.length - 1)) * chartWidth;
+    const x = trendData.length === 1 ? chartWidth / 2 : (index / (trendData.length - 1)) * chartWidth;
     const y = chartHeight - ((d.score - minScore) / (maxScore - minScore)) * chartHeight;
     return { x, y, score: d.score, date: d.date };
   });
