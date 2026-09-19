@@ -46,20 +46,17 @@ export interface GapAnalysisResult {
  */
 export function calculateReadiness(
   profile: CandidateProfile,
-  courseCompletionPercentage: number = 40,
+  _ignoredLegacyArg?: number,
   interviewCategoryScores?: Partial<CategoryScores>
 ): GapAnalysisResult {
-  // 1. Profile Completeness (Max 20 points)
-  let profileScore = 5;
-  if (profile.projects && profile.projects.length > 0) profileScore += 5;
+  // 1. Profile Completeness (Max 30 points)
+  let profileScore = 10;
+  if (profile.projects && profile.projects.length > 0) profileScore += 10;
   if (profile.skills && profile.skills.length >= 3) profileScore += 5;
   if (profile.education?.degree) profileScore += 5;
-  profileScore = Math.min(profileScore, 20);
+  profileScore = Math.min(profileScore, 30);
 
-  // 2. Course Completion (Max 20 points)
-  const courseScore = Math.round((courseCompletionPercentage / 100) * 20);
-
-  // 3. Interview Performance (Max 60 points)
+  // 2. Interview Performance (Max 70 points)
   const tech = interviewCategoryScores?.technicalKnowledge ?? 72;
   const prob = interviewCategoryScores?.problemSolving ?? 70;
   const proj = interviewCategoryScores?.projects ?? 80;
@@ -77,10 +74,10 @@ export function calculateReadiness(
     behav * 0.10 +
     ((role + comp) / 2) * 0.10;
 
-  const interviewScorePoints = Math.round((weightedInterviewRating / 100) * 60);
+  const interviewScorePoints = Math.round((weightedInterviewRating / 100) * 70);
 
   const totalReadiness = Math.min(
-    Math.max(profileScore + courseScore + interviewScorePoints, 10),
+    Math.max(profileScore + interviewScorePoints, 10),
     100
   );
 
@@ -140,6 +137,6 @@ export function calculateReadiness(
     categoryReadiness,
     keyGaps,
     nextFocusRecommendation,
-    calculationExplanation: "Weighted composite: Profile (20%) + Roadmap (20%) + Mock Interview (60%: Tech 25%, Problems 20%, Projects 20%, Communication 15%, Behavioral 10%, Role 10%)",
+    calculationExplanation: "Weighted composite: Profile Completeness (30%) + Mock Interview Performance (70%: Tech 25%, Problems 20%, Projects 20%, Communication 15%, Behavioral 10%, Role 10%)",
   };
 }

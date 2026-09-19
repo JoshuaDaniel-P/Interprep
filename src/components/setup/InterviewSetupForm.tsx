@@ -133,149 +133,135 @@ export function InterviewSetupForm() {
       sessionStorage.setItem("preppilot_active_config", JSON.stringify(finalConfig));
     }
 
-    router.push("/interview");
+    router.push("/interviews/session");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* 1. Target Role */}
-      <Card>
-        <CardContent className="p-6">
-          <SelectCardGroup
-            label="1. Target Role"
-            description="Select the specific engineering or business role you are preparing for."
-            options={roleOptions}
-            selectedValue={config.targetRole}
-            onChange={(targetRole) => setConfig((prev) => ({ ...prev, targetRole }))}
-            columns={3}
-          />
-        </CardContent>
-      </Card>
+      <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.22, "edgeHighlight": 0.85, "specular": 0.75, "zRadius": 18, "cornerRadius": 28}'>
+        <SelectCardGroup
+          label="1. Target Role"
+          description="Select the specific engineering or business role you are preparing for."
+          options={roleOptions}
+          selectedValue={config.targetRole}
+          onChange={(targetRole) => setConfig((prev) => ({ ...prev, targetRole }))}
+          columns={3}
+        />
+      </div>
 
       {/* 2. Target Company & Experience Level */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6 space-y-4">
-            <SelectCardGroup
-              label="2. Company Type"
-              description="Calibrates the interviewer's perspective and expectations."
-              options={companyOptions}
-              selectedValue={config.companyType}
-              onChange={(companyType) => setConfig((prev) => ({ ...prev, companyType }))}
-              columns={2}
-            />
+        <div className="glass liquid-glass-panel p-6 sm:p-7 space-y-4" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+          <SelectCardGroup
+            label="2. Company Type"
+            description="Calibrates the interviewer's perspective and expectations."
+            options={companyOptions}
+            selectedValue={config.companyType}
+            onChange={(companyType) => setConfig((prev) => ({ ...prev, companyType }))}
+            columns={2}
+          />
 
-            <div className="pt-2 border-t border-gray-100">
-              <label className="text-xs font-bold text-gray-700 block mb-1 flex items-center gap-1.5">
-                <Building2 className="w-3.5 h-3.5 text-gray-500" />
-                Target Company Name (Optional)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g., Google, Amazon, Stripe, Razorpay..."
-                value={config.company || ""}
-                onChange={(e) => setConfig((prev) => ({ ...prev, company: e.target.value }))}
-                className="w-full p-2.5 text-xs text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <SelectCardGroup
-              label="3. Experience Level"
-              description="Adjusts question depth and seniority expectations."
-              options={experienceOptions}
-              selectedValue={config.experienceLevel}
-              onChange={(experienceLevel) => setConfig((prev) => ({ ...prev, experienceLevel }))}
-              columns={2}
+          <div className="pt-3 border-t border-slate-200/60">
+            <label className="text-xs font-extrabold text-slate-800 block mb-1.5 flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-blue-600" />
+              Target Company Name (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., Google, Amazon, Stripe, Razorpay..."
+              value={config.company || ""}
+              onChange={(e) => setConfig((prev) => ({ ...prev, company: e.target.value }))}
+              className="w-full p-3 text-xs text-slate-900 bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-semibold shadow-xs"
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+          <SelectCardGroup
+            label="3. Experience Level"
+            description="Adjusts question depth and seniority expectations."
+            options={experienceOptions}
+            selectedValue={config.experienceLevel}
+            onChange={(experienceLevel) => setConfig((prev) => ({ ...prev, experienceLevel }))}
+            columns={2}
+          />
+        </div>
       </div>
 
       {/* 4. Interview Type & Difficulty */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <SelectCardGroup
-              label="4. Interview Focus"
-              description="Select the focus area of this session."
-              options={typeOptions}
-              selectedValue={config.interviewType}
-              onChange={(interviewType) => setConfig((prev) => ({ ...prev, interviewType }))}
-              columns={2}
-            />
-          </CardContent>
-        </Card>
+        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+          <SelectCardGroup
+            label="4. Interview Focus"
+            description="Select the focus area of this session."
+            options={typeOptions}
+            selectedValue={config.interviewType}
+            onChange={(interviewType) => setConfig((prev) => ({ ...prev, interviewType }))}
+            columns={2}
+          />
+        </div>
 
-        <Card>
-          <CardContent className="p-6">
-            <SelectCardGroup
-              label="5. Interview Difficulty"
-              description="Select how the AI interviewer adapts follow-up depth."
-              options={difficultyOptions}
-              selectedValue={config.difficulty}
-              onChange={(difficulty) => setConfig((prev) => ({ ...prev, difficulty }))}
-              columns={2}
-            />
-          </CardContent>
-        </Card>
+        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+          <SelectCardGroup
+            label="5. Interview Difficulty"
+            description="Select how the AI interviewer adapts follow-up depth."
+            options={difficultyOptions}
+            selectedValue={config.difficulty}
+            onChange={(difficulty) => setConfig((prev) => ({ ...prev, difficulty }))}
+            columns={2}
+          />
+        </div>
       </div>
 
       {/* 6. Question Count & Interview Mode */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <SelectCardGroup
-              label="6. Question Count"
-              description="Choose question length or auto-tune per stream."
-              options={questionLengthOptions}
-              selectedValue={config.questionCount || 0}
-              onChange={(questionCount) => setConfig((prev) => ({ ...prev, questionCount }))}
-              columns={2}
-            />
-          </CardContent>
-        </Card>
+        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+          <SelectCardGroup
+            label="6. Question Count"
+            description="Choose question length or auto-tune per stream."
+            options={questionLengthOptions}
+            selectedValue={config.questionCount || 0}
+            onChange={(questionCount) => setConfig((prev) => ({ ...prev, questionCount }))}
+            columns={2}
+          />
+        </div>
 
-        <Card>
-          <CardContent className="p-6">
-            <SelectCardGroup
-              label="7. Interview Mode"
-              description="Choose how you want to conduct the interview."
-              options={modeOptions}
-              selectedValue={config.mode}
-              onChange={(mode) => setConfig((prev) => ({ ...prev, mode }))}
-              columns={2}
-            />
-          </CardContent>
-        </Card>
+        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+          <SelectCardGroup
+            label="7. Interview Mode"
+            description="Choose how you want to conduct the interview."
+            options={modeOptions}
+            selectedValue={config.mode}
+            onChange={(mode) => setConfig((prev) => ({ ...prev, mode }))}
+            columns={2}
+          />
+        </div>
       </div>
 
       {/* Summary Banner & Action */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+      <div className="glass liquid-glass-panel p-6 flex flex-col sm:flex-row items-center justify-between gap-4" data-config='{"refraction": 0.25, "edgeHighlight": 0.9, "specular": 0.8, "zRadius": 20, "cornerRadius": 28}'>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-blue-600/15 text-blue-600 flex items-center justify-center shrink-0 border border-blue-500/20">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-gray-900">Summary Configuration</h3>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h3 className="text-sm font-extrabold text-slate-900">Summary Configuration</h3>
+            <p className="text-xs text-slate-600 font-semibold mt-0.5">
               {config.targetRole} • {config.company || config.companyType} • {config.difficulty} Difficulty • {config.mode} Mode
             </p>
           </div>
         </div>
 
-        <Button
+        <button
           type="submit"
-          size="lg"
-          isLoading={isStarting}
-          className="w-full sm:w-auto px-8 gap-2"
+          disabled={isStarting}
+          className="glass liquid-glass-btn-primary px-8 py-3 text-xs font-black gap-2.5 w-full sm:w-auto"
+          data-config='{"button": true, "zRadius": 14, "cornerRadius": 9999}'
         >
-          <PlayCircle className="w-5 h-5" />
-          Start Realistic Interview
-        </Button>
+          <PlayCircle className="w-5 h-5 text-white" />
+          {isStarting ? "Initializing AI Session..." : "Start Realistic Interview"}
+        </button>
       </div>
     </form>
   );

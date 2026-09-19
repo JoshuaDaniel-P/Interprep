@@ -40,7 +40,10 @@ export function InterviewHeader({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-4">
+    <div
+      className="glass liquid-glass-panel p-5 space-y-4"
+      data-config='{"refraction": 0.22, "edgeHighlight": 0.85, "specular": 0.75, "zRadius": 18, "cornerRadius": 28}'
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span className="text-sm font-bold text-gray-900">

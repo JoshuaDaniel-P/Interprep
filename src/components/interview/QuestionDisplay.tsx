@@ -70,8 +70,10 @@ export function QuestionDisplay({ question, autoSpeak = false }: QuestionDisplay
   }, [question.id]);
 
   return (
-    <Card className="border-brand-200/70 shadow-card">
-      <CardContent className="p-6 sm:p-8 space-y-4">
+    <div
+      className="glass liquid-glass-panel p-6 sm:p-8 space-y-4"
+      data-config='{"refraction": 0.25, "edgeHighlight": 0.9, "specular": 0.8, "zRadius": 20, "cornerRadius": 28}'
+    >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center shadow-xs">
@@ -132,7 +134,6 @@ export function QuestionDisplay({ question, autoSpeak = false }: QuestionDisplay
             </p>
           )}
         </div>
-      </CardContent>
-    </Card>
-  );
-}
+      </div>
+    );
+  }

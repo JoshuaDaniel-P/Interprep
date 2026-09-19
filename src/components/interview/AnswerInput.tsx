@@ -113,8 +113,10 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
   };
 
   return (
-    <Card className="border-gray-200 shadow-xs">
-      <CardContent className="p-6 space-y-4">
+    <div
+      className="glass liquid-glass-panel p-6 space-y-4"
+      data-config='{"refraction": 0.25, "edgeHighlight": 0.9, "specular": 0.8, "zRadius": 20, "cornerRadius": 28}'
+    >
         {/* Error Alert with Safe Retry */}
         {errorMessage && (
           <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -258,7 +260,6 @@ export function AnswerInput({ onSubmit, isSubmitting = false }: AnswerInputProps
             </div>
           </div>
         </form>
-      </CardContent>
-    </Card>
-  );
-}
+      </div>
+    );
+  }

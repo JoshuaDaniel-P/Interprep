@@ -19,12 +19,31 @@ import {
   Edit,
   Award,
   CheckCircle,
+  FileText,
+  Upload,
+  Trash2,
 } from "lucide-react";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, profile, logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [resumeName, setResumeName] = useState<string>("Alex_FullStack_Resume_2026.pdf");
+  const [resumeUploadedAt, setResumeUploadedAt] = useState<string>("September 15, 2026");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      setTimeout(() => {
+        setResumeName(file.name);
+        setResumeUploadedAt(new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
+        setIsUploading(false);
+      }, 500);
+    }
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -33,35 +52,25 @@ export default function ProfilePage() {
     router.push("/login");
   };
 
-  const activeProfile = profile || {
-    fullName: "Candidate",
-    email: user?.email || "candidate@preppilot.com",
-    city: "San Francisco, CA",
-    status: "Student",
-    bio: "Software engineering candidate focused on full-stack web APIs and system design.",
-    readinessPercentage: 68,
-    targetGoal: {
+  const activeProfile = {
+    fullName: profile?.fullName || user?.displayName || user?.email?.split("@")[0] || "Candidate",
+    email: profile?.email || user?.email || "",
+    city: profile?.city || "Not specified",
+    status: profile?.status || "Student",
+    bio: profile?.bio || "Candidate preparing for realistic AI mock interviews.",
+    readinessPercentage: profile?.readinessPercentage || 20,
+    targetGoal: profile?.targetGoal || {
       targetRole: "Software Developer",
       difficulty: "Realistic",
     },
-    education: {
-      degree: "B.Tech Computer Science",
-      institution: "State University",
-      graduationYear: 2026,
-      cgpaOrPercentage: "3.8 CGPA",
+    education: profile?.education || {
+      degree: "Not specified",
+      institution: "Not specified",
+      graduationYear: new Date().getFullYear(),
+      cgpaOrPercentage: "",
     },
-    skills: [
-      { name: "JavaScript / TypeScript", proficiency: "Intermediate" },
-      { name: "Node.js & Express", proficiency: "Intermediate" },
-      { name: "SQL & Databases", proficiency: "Beginner" },
-    ],
-    projects: [
-      {
-        name: "ESP32 Bus Tracking & Payment API",
-        technologies: ["Node.js", "Redis", "ESP32", "PostgreSQL"],
-        challenges: "Query latency exceeded 450ms; Redis caching brought read latency to 25ms.",
-      },
-    ],
+    skills: profile?.skills || [],
+    projects: profile?.projects || [],
   };
 
   return (
@@ -117,6 +126,75 @@ export default function ProfilePage() {
               <LogOut className="w-4 h-4" /> Log Out
             </Button>
           </div>
+
+          {/* Hidden File Input for Resume */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleResumeUpload}
+            accept=".pdf,.doc,.docx"
+            className="hidden"
+          />
+
+          {/* Resume & CV Management Card */}
+          <Card>
+            <CardHeader className="py-4 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-brand-600" />
+                Resume & Portfolio File
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs font-bold"
+                onClick={() => fileInputRef.current?.click()}
+                isLoading={isUploading}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                Replace Resume
+              </Button>
+            </CardHeader>
+            <CardContent className="p-6 pt-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-black text-xs shrink-0 border border-rose-200">
+                    PDF
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 truncate max-w-xs sm:max-w-md">
+                      {resumeName}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Uploaded on {resumeUploadedAt} • Extracted 3 skills & 1 project
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs font-bold text-blue-600 border-blue-200 hover:bg-blue-50"
+                    onClick={() => alert(`Viewing ${resumeName}`)}
+                  >
+                    View File
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-rose-600 hover:bg-rose-50 p-2"
+                    onClick={() => {
+                      setResumeName("No resume attached");
+                      setResumeUploadedAt("Pending upload");
+                    }}
+                    title="Remove Resume"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Education Card */}
           <Card>

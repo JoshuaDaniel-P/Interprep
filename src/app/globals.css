@@ -4,26 +4,140 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    --glass-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(248, 250, 252, 0.45) 100%);
+    --glass-border: rgba(255, 255, 255, 0.95);
+    --glass-highlight: rgba(255, 255, 255, 1);
+    --glass-shadow: 0 20px 45px -12px rgba(15, 23, 42, 0.08), 0 4px 14px -2px rgba(15, 23, 42, 0.03);
+    --glass-radius: 28px;
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased selection:bg-brand-500 selection:text-white;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    @apply antialiased selection:bg-brand-500 selection:text-white transition-colors duration-300;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    background-color: #f8fafc;
+    /* Clean White Studio Environment */
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(255, 255, 255, 1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(241, 245, 249, 0.9) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(239, 246, 255, 0.6) 0px, transparent 50%);
   }
 }
 
-/* Custom scrollbar and clean transitions */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+/* Master Physical Inflated Clear Glass System */
+@layer components {
+  /* Class selector for @ybouane/liquidglass engine target */
+  .glass,
+  .liquid-glass-panel {
+    @apply rounded-[28px] transition-all duration-300 relative overflow-hidden;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(248, 250, 252, 0.45) 100%);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 
+      0 20px 45px -12px rgba(15, 23, 42, 0.08),
+      0 4px 14px -2px rgba(15, 23, 42, 0.03),
+      inset 0 2.5px 3px 0 rgba(255, 255, 255, 1),
+      inset 0 -2px 3px 0 rgba(15, 23, 42, 0.03);
+  }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+  /* Curved Specular Reflection Top Rim */
+  .glass::before,
+  .liquid-glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+    border-top-left-radius: 26px;
+    border-top-right-radius: 26px;
+  }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+  .liquid-glass-interactive {
+    @apply liquid-glass-panel hover:scale-[1.01] hover:bg-white/85 hover:shadow-2xl transition-all duration-200 cursor-pointer;
+  }
+
+  /* Physical Inflated Glass Capsule (Stat Cards, Navigation, Pills) */
+  .glass-capsule,
+  .liquid-glass-capsule {
+    @apply rounded-full transition-all duration-300 relative overflow-hidden backdrop-blur-md;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(245, 248, 255, 0.65) 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.98);
+    box-shadow: 
+      0 8px 20px -4px rgba(15, 23, 42, 0.06),
+      inset 0 2px 2px 0 rgba(255, 255, 255, 1),
+      inset 0 -1.5px 1.5px 0 rgba(0, 0, 0, 0.02);
+  }
+
+  /* Primary Inflated Glass Button with Internal Blue Illumination */
+  .glass-button,
+  .liquid-glass-btn-primary {
+    @apply inline-flex items-center justify-center font-black rounded-full transition-all duration-200 active:scale-[0.97] cursor-pointer relative overflow-hidden;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 
+      0 8px 24px -4px rgba(37, 99, 235, 0.4),
+      inset 0 2px 2px 0 rgba(255, 255, 255, 0.85),
+      inset 0 -2px 2px 0 rgba(0, 0, 0, 0.2);
+    color: white;
+  }
+
+  .liquid-glass-btn-primary:hover {
+    box-shadow: 
+      0 12px 28px -4px rgba(37, 99, 235, 0.55),
+      inset 0 2px 2px 0 rgba(255, 255, 255, 0.95);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  }
+
+  /* Secondary Inflated Glass Button */
+  .liquid-glass-btn-secondary {
+    @apply inline-flex items-center justify-center font-black rounded-full transition-all duration-200 cursor-pointer;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(240, 245, 255, 0.7) 100%);
+    backdrop-filter: blur(12px);
+    border: 1.5px solid rgba(255, 255, 255, 0.98);
+    box-shadow: 
+      0 4px 14px rgba(15, 23, 42, 0.06),
+      inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1);
+    color: #2563eb;
+  }
+
+  .liquid-glass-btn-secondary:hover {
+    @apply bg-white text-blue-700 shadow-md border-white;
+  }
+
+  /* Subtle Warm Amber Tinted Glass Panel for Actionable Insight */
+  .liquid-glass-amber-panel {
+    @apply rounded-[28px] transition-all duration-300 relative overflow-hidden;
+    background: linear-gradient(135deg, rgba(254, 243, 199, 0.7) 0%, rgba(253, 230, 138, 0.45) 100%);
+    backdrop-filter: blur(14px);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 
+      0 12px 30px -5px rgba(245, 158, 11, 0.12),
+      inset 0 2px 2px 0 rgba(255, 255, 255, 1);
+  }
+
+  /* Subtle Green Tinted Glass Panel for Progress Tracking */
+  .liquid-glass-green-panel {
+    @apply rounded-[28px] transition-all duration-300 relative overflow-hidden;
+    background: linear-gradient(135deg, rgba(209, 250, 229, 0.7) 0%, rgba(167, 243, 208, 0.42) 100%);
+    backdrop-filter: blur(14px);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 
+      0 12px 30px -5px rgba(16, 185, 129, 0.12),
+      inset 0 2px 2px 0 rgba(255, 255, 255, 1);
+  }
+
+  /* Floating Liquid Glass Bottom Navigation Bar for Mobile */
+  .liquid-glass-mobile-nav {
+    @apply fixed bottom-4 left-4 right-4 z-50 rounded-full flex items-center justify-around py-3 px-2 shadow-2xl transition-all duration-300 md:hidden;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(240, 245, 255, 0.72) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 
+      0 16px 40px rgba(15, 23, 42, 0.12),
+      inset 0 2px 2px rgba(255, 255, 255, 1);
+  }
 }

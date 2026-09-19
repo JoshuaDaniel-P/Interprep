@@ -51,28 +51,33 @@ export function SelectCardGroup<T extends string | number = string>({
               key={option.value}
               type="button"
               disabled={isDisabled}
-              onClick={() => !isDisabled && onChange(option.value)}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isDisabled) {
+                  onChange(option.value);
+                }
+              }}
               className={cn(
-                "relative text-left p-3.5 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 flex items-start justify-between gap-2",
+                "relative text-left p-4 rounded-2xl border text-sm transition-all duration-200 cursor-pointer pointer-events-auto select-none flex items-start justify-between gap-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50",
                 isSelected
-                  ? "bg-brand-50/50 border-brand-500 ring-1 ring-brand-500 text-brand-950 font-medium"
-                  : "bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50/50",
-                isDisabled && "opacity-50 cursor-not-allowed bg-gray-50"
+                  ? "bg-blue-50/90 border-blue-600 ring-2 ring-blue-500/40 text-blue-950 font-bold shadow-md shadow-blue-500/10 backdrop-blur-md"
+                  : "bg-white/80 border-slate-200/80 text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-sm backdrop-blur-sm",
+                isDisabled && "opacity-50 cursor-not-allowed bg-slate-100/50 pointer-events-none"
               )}
             >
               <div className="flex-1 min-w-0">
-                <span className={cn("block font-medium", isSelected ? "text-brand-900 font-semibold" : "text-gray-900")}>
+                <span className={cn("block font-extrabold text-sm tracking-tight", isSelected ? "text-blue-900" : "text-slate-900")}>
                   {option.label}
                 </span>
                 {option.description && (
-                  <span className="block text-xs text-gray-500 mt-0.5 leading-snug">
+                  <span className="block text-xs text-slate-500 font-semibold mt-1 leading-snug">
                     {option.description}
                   </span>
                 )}
               </div>
 
               {isSelected && (
-                <div className="w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                   <Check className="w-3.5 h-3.5 stroke-[3]" />
                 </div>
               )}

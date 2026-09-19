@@ -6,7 +6,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { InterviewProvider } from "@/context/InterviewContext";
 import { InterviewWorkspace } from "@/components/interview/InterviewWorkspace";
 
-export default function InterviewPage() {
+export default function InterviewSessionRoutePage() {
   return (
     <ProtectedRoute>
       <AppShell>

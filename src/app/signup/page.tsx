@@ -4,43 +4,59 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { Sparkles, Mail, Lock, AlertCircle, ArrowRight } from "lucide-react";
+import { Sparkles, Mail, Lock, User, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const router = useRouter();
-  const { signInWithEmail, signInWithGoogle } = useAuth();
+  const { signUpWithEmail, signInWithGoogle } = useAuth();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-    if (!email.trim() || !password) {
-      setErrorMessage("Please enter your ID / email and password.");
+
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+
+    if (!cleanName) {
+      setErrorMessage("Please enter your full name.");
+      return;
+    }
+
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match. Please verify your password confirmation.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const result = await signInWithEmail(email.trim(), password);
-      if (result.role === "ADMIN") {
-        router.push("/admin");
-      } else if (result.isNewUser) {
-        router.push("/profile/setup");
-      } else {
-        router.push("/dashboard");
-      }
+      await signUpWithEmail(cleanName, cleanEmail, password);
+      // Take new candidate directly to the candidate profile onboarding flow
+      router.push("/profile/setup");
     } catch (err: any) {
-      setErrorMessage(err.message || "Authentication failed. Please check your credentials.");
+      setErrorMessage(err.message || "Registration failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignup = async () => {
     setErrorMessage(null);
     setIsSubmitting(true);
     try {
@@ -78,25 +94,25 @@ export default function LoginPage() {
             PrepPilot
           </h1>
           <p className="text-xs text-slate-500 uppercase tracking-wider font-extrabold">
-            AI Interview Simulator & Evaluator
+            Candidate Account Registration
           </p>
         </div>
 
-        {/* Login Liquid Glass Panel */}
+        {/* Registration Liquid Glass Panel */}
         <div
           className="glass liquid-glass-panel p-7 sm:p-8 space-y-5"
           data-config='{"refraction": 0.25, "edgeHighlight": 0.9, "specular": 0.8, "zRadius": 22, "cornerRadius": 32}'
         >
           <div className="text-center space-y-1">
             <h2 className="text-xl font-extrabold text-slate-900">
-              Sign In to Your Account
+              Create your account
             </h2>
             <p className="text-xs text-slate-500 font-semibold">
-              Enter your credentials to access your interview workspace.
+              Register as a candidate to begin realistic AI mock interviews.
             </p>
           </div>
 
-          {/* Exact Error Message Display */}
+          {/* Error Message Display */}
           {errorMessage && (
             <div className="p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200 text-rose-800 text-xs font-bold flex items-start gap-2.5 shadow-xs">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -104,29 +120,27 @@ export default function LoginPage() {
             </div>
           )}
 
-<<<<<<< Updated upstream
-          <CardContent className="p-6 space-y-4">
-            {!isFirebaseConfigured && (
-              <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200 text-blue-900 text-xs flex items-start gap-2.5">
-                <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <p className="font-semibold text-blue-900">Zero-Config Mode Active</p>
-                  <p className="text-blue-700 leading-relaxed">
-                    Database credentials are not required. You can sign in with any email, click Google, or use Quick Demo Access.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {errorMessage && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>{errorMessage}</span>
-=======
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-xs font-extrabold text-slate-700 block mb-1.5">
-                ID / Email Address
+                Full Name
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="text"
+                  placeholder="Jordan Smith"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-900"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-extrabold text-slate-700 block mb-1.5">
+                Email Address / User ID
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -138,13 +152,12 @@ export default function LoginPage() {
                   className="w-full pl-10 pr-4 py-2.5 text-sm bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-900"
                   required
                 />
->>>>>>> Stashed changes
               </div>
             </div>
 
             <div>
               <label className="text-xs font-extrabold text-slate-700 block mb-1.5">
-                Password
+                Password (min 6 characters)
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -159,13 +172,30 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div>
+              <label className="text-xs font-extrabold text-slate-700 block mb-1.5">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <CheckCircle2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-900"
+                  required
+                />
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={isSubmitting}
               className="glass liquid-glass-btn-primary w-full py-3 text-xs font-black gap-2 shadow-md"
               data-config='{"button": true, "zRadius": 14, "cornerRadius": 9999}'
             >
-              <span>{isSubmitting ? "Authenticating..." : "Log in"}</span>
+              <span>{isSubmitting ? "Creating Account..." : "Create Account"}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -174,7 +204,7 @@ export default function LoginPage() {
           <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-slate-200/70"></div>
             <span className="flex-shrink mx-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-              Or Continue With
+              Or Register With
             </span>
             <div className="flex-grow border-t border-slate-200/70"></div>
           </div>
@@ -183,7 +213,7 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={isSubmitting}
-            onClick={handleGoogleLogin}
+            onClick={handleGoogleSignup}
             className="glass liquid-glass-btn-secondary w-full py-2.5 px-4 text-xs font-extrabold gap-3 text-slate-800"
             data-config='{"button": true, "zRadius": 12, "cornerRadius": 9999}'
           >
@@ -208,15 +238,15 @@ export default function LoginPage() {
             <span>Continue with Google</span>
           </button>
 
-          {/* Create Account Link */}
+          {/* Already have an account */}
           <div className="pt-2 text-center border-t border-slate-200/60">
             <p className="text-xs text-slate-500 font-semibold">
-              Don&apos;t have an account?{" "}
+              Already have an account?{" "}
               <Link
-                href="/signup"
+                href="/login"
                 className="font-black text-blue-600 hover:text-blue-700 hover:underline"
               >
-                Create account
+                Log in
               </Link>
             </p>
           </div>

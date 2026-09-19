@@ -3,7 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { InterviewSetupForm } from "@/components/setup/InterviewSetupForm";
 
-export default function SetupPage() {
+export default function InterviewSetupRoutePage() {
   return (
     <ProtectedRoute>
       <AppShell>

@@ -4,12 +4,11 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  PlayCircle,
-  History,
+  Home,
   BookOpen,
-  UserCheck,
-  ShieldCheck,
+  PlayCircle,
+  TrendingUp,
+  User,
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,112 +19,82 @@ interface NavigationItem {
   icon: React.ElementType;
 }
 
-const mainNavigation: NavigationItem[] = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Practice Interview", href: "/setup", icon: PlayCircle },
-  { name: "Preparation Roadmaps", href: "/courses", icon: BookOpen },
-  { name: "History", href: "/history", icon: History },
-];
-
-const secondaryNavigation: NavigationItem[] = [
-  { name: "Onboarding Profile", href: "/onboarding", icon: UserCheck },
-  { name: "Admin Portal", href: "/admin", icon: ShieldCheck },
+const sidebarNavigation: NavigationItem[] = [
+  { name: "Home", href: "/dashboard", icon: Home },
+  { name: "Interviews", href: "/interviews", icon: PlayCircle },
+  { name: "Performance", href: "/performance", icon: TrendingUp },
+  { name: "History", href: "/interviews/history", icon: Sparkles },
+  { name: "Profile", href: "/profile", icon: User },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed inset-y-0 left-0 z-30 hidden md:flex">
+    <aside className="w-64 flex flex-col h-screen fixed inset-y-0 left-0 z-30 hidden md:flex transition-all duration-300">
       {/* Brand Header */}
-      <div className="h-16 px-6 flex items-center gap-3 border-b border-slate-100">
-        <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white shadow-xs">
-          <Sparkles className="w-5 h-5" />
+      <div className="h-20 px-8 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-md">
+          <Sparkles className="w-4 h-4" />
         </div>
-        <div>
-          <span className="font-bold text-lg tracking-tight text-slate-900 block leading-tight">
-            PrepPilot
-          </span>
-          <span className="text-[10px] text-slate-500 font-bold tracking-wide uppercase">
-            AI Interview Co-pilot
-          </span>
-        </div>
+        <span className="font-extrabold text-xl tracking-tight text-slate-900">
+          PrepPilot
+        </span>
       </div>
 
-      {/* Main Navigation */}
-      <div className="flex-1 py-6 px-4 space-y-8 overflow-y-auto">
-        <div>
-          <div className="px-3 mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Menu
-          </div>
-          <nav className="space-y-1">
-            {mainNavigation.map((item) => {
-              const isActive = pathname.startsWith(item.href);
-              const Icon = item.icon;
+      {/* Navigation Links */}
+      <div className="flex-1 py-4 px-6 space-y-2">
+        <nav className="space-y-2">
+          {sidebarNavigation.map((item) => {
+            const isActive =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href);
+            const Icon = item.icon;
 
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200",
+                  isActive
+                    ? "bg-white/80 text-blue-600 border border-white shadow-md shadow-blue-500/10 backdrop-blur-md"
+                    : "text-slate-500 hover:text-slate-900 hover:bg-white/40"
+                )}
+              >
+                <Icon
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all",
-                    isActive
-                      ? "bg-brand-50 text-brand-700 border border-brand-200"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    "w-4 h-4 transition-colors",
+                    isActive ? "text-blue-600" : "text-slate-400"
                   )}
-                >
-                  <Icon
-                    className={cn(
-                      "w-5 h-5 transition-colors",
-                      isActive ? "text-brand-600" : "text-slate-400"
-                    )}
-                  />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div>
-          <div className="px-3 mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Management
-          </div>
-          <nav className="space-y-1">
-            {secondaryNavigation.map((item) => {
-              const isActive = pathname.startsWith(item.href);
-              const Icon = item.icon;
-
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all",
-                    isActive
-                      ? "bg-brand-50 text-brand-700 border border-brand-200"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "w-5 h-5 transition-colors",
-                      isActive ? "text-brand-600" : "text-slate-400"
-                    )}
-                  />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+                />
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
-      {/* Footer Status */}
-      <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-        <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-600">
-          <p className="font-bold text-slate-900">Offline-First Engine</p>
-          <p className="mt-0.5 text-slate-500 text-[11px]">Firestore Persistence Active</p>
+      {/* Footer Branding & Liquid Badge (Matching Mockup) */}
+      <div className="p-6 space-y-6">
+        <div className="space-y-0.5 text-slate-400 text-xs font-semibold leading-tight px-2">
+          <p>Better</p>
+          <p>Interviews</p>
+          <p>A Brighter</p>
+          <p className="text-slate-500 font-bold">You</p>
+          <p className="pt-1 text-slate-300">— —</p>
+        </div>
+
+        {/* PrepPilot v1.0.0 Liquid Glass Capsule Badge */}
+        <div className="p-3 mockup-glass-card flex items-center gap-2.5 rounded-2xl bg-white/70 shadow-sm border-white">
+          <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-600">
+            <Sparkles className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <p className="text-[11px] font-black text-slate-900 leading-none">PrepPilot</p>
+            <p className="text-[10px] text-slate-500 font-bold mt-0.5">v1.0.0</p>
+          </div>
         </div>
       </div>
     </aside>

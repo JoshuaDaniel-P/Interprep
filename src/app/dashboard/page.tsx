@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { PreparationReadinessCard } from "@/components/dashboard/PreparationReadinessCard";
 import { ContinueWhereYouLeftOffCard } from "@/components/dashboard/ContinueWhereYouLeftOffCard";
@@ -155,64 +156,66 @@ export default function DashboardPage() {
   const readiness = profile?.readinessPercentage || 68;
 
   return (
-    <AppShell>
-      <div className="space-y-6 pb-12">
-        {/* Profile Completion Prompt if new user */}
-        {user && (!profile || !profile.isOnboarded) && (
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                <UserCheck className="w-5 h-5" />
+    <ProtectedRoute>
+      <AppShell>
+        <div className="space-y-6 pb-12">
+          {/* Profile Completion Prompt if new user */}
+          {user && (!profile || !profile.isOnboarded) && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-amber-950">Complete Your Candidate Profile</h4>
+                  <p className="text-xs text-amber-800 mt-0.5">
+                    Set your college, degree, skills, and target stream to receive tailored mock questions and precise readiness scoring.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-amber-950">Complete Your Candidate Profile</h4>
-                <p className="text-xs text-amber-800 mt-0.5">
-                  Set your college, degree, skills, and target stream to receive tailored mock questions and precise readiness scoring.
-                </p>
-              </div>
+              <Link href="/profile/setup">
+                <Button size="sm" className="whitespace-nowrap">
+                  Complete Setup →
+                </Button>
+              </Link>
             </div>
-            <Link href="/profile/setup">
-              <Button size="sm" className="whitespace-nowrap">
-                Complete Setup →
-              </Button>
-            </Link>
-          </div>
-        )}
+          )}
 
-        {/* Personal Greeting with Real Candidate Name */}
-        <DashboardHeader userName={displayName} />
+          {/* Personal Greeting with Real Candidate Name */}
+          <DashboardHeader userName={displayName} />
 
-        {/* 1. Preparation Readiness % Card */}
-        <PreparationReadinessCard
-          targetRole={targetRole}
-          readinessPercentage={readiness}
-          categoryReadiness={categoryReadiness}
-        />
+          {/* 1. Preparation Readiness % Card */}
+          <PreparationReadinessCard
+            targetRole={targetRole}
+            readinessPercentage={readiness}
+            categoryReadiness={categoryReadiness}
+          />
 
-        {/* 2. Continue Where You Left Off Quick Access */}
-        <ContinueWhereYouLeftOffCard targetRole={targetRole} />
+          {/* 2. Continue Where You Left Off Quick Access */}
+          <ContinueWhereYouLeftOffCard targetRole={targetRole} />
 
-        {/* 3. Key Metrics */}
-        {metrics && <MetricsGrid metrics={metrics} />}
+          {/* 3. Key Metrics */}
+          {metrics && <MetricsGrid metrics={metrics} />}
 
-        {/* 4. Actionable Improvement Insight */}
-        <ImprovementInsightCard
-          recommendation={metrics?.topRecommendation || `Practice ${targetRole} technical trade-offs and quantitative project results.`}
-          improvementNotice={improvementNotice}
-          recurringGaps={recurringGaps}
-        />
+          {/* 4. Actionable Improvement Insight */}
+          <ImprovementInsightCard
+            recommendation={metrics?.topRecommendation || `Practice ${targetRole} technical trade-offs and quantitative project results.`}
+            improvementNotice={improvementNotice}
+            recurringGaps={recurringGaps}
+          />
 
-        {/* 5. Performance Overview & Skill Breakdown */}
-        {metrics && skills && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <PerformanceOverview trendData={metrics.scoreTrend} />
-            <SkillBreakdown skills={skills} />
-          </div>
-        )}
+          {/* 5. Performance Overview & Skill Breakdown */}
+          {metrics && skills && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <PerformanceOverview trendData={metrics.scoreTrend} />
+              <SkillBreakdown skills={skills} />
+            </div>
+          )}
 
-        {/* 6. Recent Mock Interviews Table */}
-        <RecentInterviewsTable sessions={sessions} />
-      </div>
-    </AppShell>
+          {/* 6. Recent Mock Interviews Table */}
+          <RecentInterviewsTable sessions={sessions} />
+        </div>
+      </AppShell>
+    </ProtectedRoute>
   );
 }
