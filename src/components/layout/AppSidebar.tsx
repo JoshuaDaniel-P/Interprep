@@ -31,15 +31,17 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 flex flex-col h-screen fixed inset-y-0 left-0 z-30 hidden md:flex transition-all duration-300">
+    <aside className="w-64 flex flex-col h-screen fixed inset-y-0 left-0 z-50 hidden md:flex transition-all duration-300 pointer-events-auto select-none">
       {/* Brand Header */}
       <div className="h-20 px-8 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-md">
-          <Sparkles className="w-4 h-4" />
-        </div>
-        <span className="font-extrabold text-xl tracking-tight text-slate-900">
-          PrepPilot
-        </span>
+        <Link href="/dashboard" className="flex items-center gap-3 cursor-pointer">
+          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-md">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <span className="font-extrabold text-xl tracking-tight text-slate-900">
+            PrepPilot
+          </span>
+        </Link>
       </div>
 
       {/* Navigation Links */}
@@ -57,7 +59,7 @@ export function AppSidebar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200",
+                  "flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 cursor-pointer pointer-events-auto relative z-10",
                   isActive
                     ? "bg-white/80 text-blue-600 border border-white shadow-md shadow-blue-500/10 backdrop-blur-md"
                     : "text-slate-500 hover:text-slate-900 hover:bg-white/40"

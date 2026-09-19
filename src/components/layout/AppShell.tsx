@@ -21,7 +21,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Desktop Sidebar */}
-        <div className="relative z-10 hidden md:block">
+        <div className="relative z-50 hidden md:block w-64 shrink-0">
           <AppSidebar />
         </div>
 
