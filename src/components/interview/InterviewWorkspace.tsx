@@ -35,6 +35,7 @@ export function InterviewWorkspace() {
         timeElapsedSeconds={timeElapsedSeconds}
         role={config.targetRole}
         difficulty={config.difficulty}
+        company={config.company}
         onEndInterview={endInterview}
       />
 

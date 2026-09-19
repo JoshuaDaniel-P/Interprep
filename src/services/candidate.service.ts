@@ -101,6 +101,21 @@ export class CandidateService {
     }
   }
 
+  async updateCandidateReadinessAfterInterview(
+    uid: string,
+    categoryScores: Partial<import("@/types/interview").CategoryScores>
+  ): Promise<CandidateProfile> {
+    const current = await this.getProfile(uid);
+    const analysis = calculateReadiness(current, 50, categoryScores);
+    const updated: CandidateProfile = {
+      ...current,
+      readinessPercentage: analysis.readinessPercentage,
+      updatedAt: new Date().toISOString(),
+    };
+    await this.saveProfile(updated);
+    return updated;
+  }
+
   async setTargetRole(uid: string, roleTrack: TargetRoleTrack): Promise<CandidateProfile> {
     const current = await this.getProfile(uid);
     const updated: CandidateProfile = {

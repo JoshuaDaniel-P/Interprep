@@ -1,63 +1,127 @@
 import { CandidateProfile, TargetRoleTrack } from "@/types/candidate";
+import { CategoryScores } from "@/types/interview";
+
+export interface CategoryReadinessBreakdown {
+  technical: number;
+  projects: number;
+  communication: number;
+  behavioral: number;
+}
 
 export interface GapAnalysisResult {
   readinessPercentage: number;
   roleTrack: TargetRoleTrack;
+  categoryReadiness: CategoryReadinessBreakdown;
   keyGaps: {
     skillName: string;
     status: "Missing" | "Weak" | "Sufficient";
     recommendation: string;
   }[];
   nextFocusRecommendation: string;
+  calculationExplanation: string;
 }
 
+/**
+ * Weighted Readiness Calculation Engine
+ * -------------------------------------
+ * PrepPilot calculates candidate interview readiness using an objective weighted model:
+ *
+ * 1. Profile Completeness (Weight: 20%)
+ *    - Base profile & bio: 5 pts
+ *    - Projects logged: 5 pts
+ *    - Validated technical skills (>= 3): 5 pts
+ *    - Education details: 5 pts
+ *
+ * 2. Roadmap / Course Completion (Weight: 20%)
+ *    - Tracks syllabus progression across core competencies (Max 20 pts)
+ *
+ * 3. Mock Interview Performance (Weight: 60%)
+ *    Weighted across 6 core interview dimensions:
+ *    - Technical Knowledge: 25% weight
+ *    - Problem Solving & Logic: 20% weight
+ *    - Project Depth & Trade-offs: 20% weight
+ *    - Communication & Clarity: 15% weight
+ *    - Behavioral STAR Mastery: 10% weight
+ *    - Role & Company Alignment: 10% weight
+ */
 export function calculateReadiness(
   profile: CandidateProfile,
   courseCompletionPercentage: number = 40,
-  averageInterviewScore: number = 7.2
+  interviewCategoryScores?: Partial<CategoryScores>
 ): GapAnalysisResult {
-  let readiness = 0;
+  // 1. Profile Completeness (Max 20 points)
+  let profileScore = 5;
+  if (profile.projects && profile.projects.length > 0) profileScore += 5;
+  if (profile.skills && profile.skills.length >= 3) profileScore += 5;
+  if (profile.education?.degree) profileScore += 5;
+  profileScore = Math.min(profileScore, 20);
 
-  // 1. Profile completeness (Max 25 pts)
-  let profileScore = 10;
-  if (profile.projects.length > 0) profileScore += 5;
-  if (profile.skills.length >= 3) profileScore += 5;
-  if (profile.education.degree) profileScore += 5;
+  // 2. Course Completion (Max 20 points)
+  const courseScore = Math.round((courseCompletionPercentage / 100) * 20);
 
-  // 2. Course completion (Max 35 pts)
-  const courseScore = Math.round((courseCompletionPercentage / 100) * 35);
+  // 3. Interview Performance (Max 60 points)
+  const tech = interviewCategoryScores?.technicalKnowledge ?? 72;
+  const prob = interviewCategoryScores?.problemSolving ?? 70;
+  const proj = interviewCategoryScores?.projects ?? 80;
+  const comm = interviewCategoryScores?.communication ?? 65;
+  const behav = interviewCategoryScores?.behavioral ?? 75;
+  const role = interviewCategoryScores?.roleKnowledge ?? 75;
+  const comp = interviewCategoryScores?.companyAwareness ?? 70;
 
-  // 3. Interview performance (Max 40 pts)
-  const interviewScore = Math.round((averageInterviewScore / 10) * 40);
+  // Weighted interview score (0 to 100)
+  const weightedInterviewRating =
+    tech * 0.25 +
+    prob * 0.20 +
+    proj * 0.20 +
+    comm * 0.15 +
+    behav * 0.10 +
+    ((role + comp) / 2) * 0.10;
 
-  readiness = Math.min(Math.max(profileScore + courseScore + interviewScore, 0), 100);
+  const interviewScorePoints = Math.round((weightedInterviewRating / 100) * 60);
+
+  const totalReadiness = Math.min(
+    Math.max(profileScore + courseScore + interviewScorePoints, 10),
+    100
+  );
+
+  const categoryReadiness: CategoryReadinessBreakdown = {
+    technical: Math.round(tech),
+    projects: Math.round(proj),
+    communication: Math.round(comm),
+    behavioral: Math.round(behav),
+  };
 
   // Identify skill gaps based on role
-  const roleGaps: Record<TargetRoleTrack, { skillName: string; recommendation: string }[]> = {
+  const roleGaps: Record<string, { skillName: string; recommendation: string }[]> = {
     "Software Developer": [
-      { skillName: "Data Structures & Algorithms", recommendation: "Practice STAR answers on optimization trade-offs." },
-      { skillName: "System Architecture", recommendation: "Review caching strategies and API gateway patterns." },
-      { skillName: "SQL & Databases", recommendation: "Practice database indexing and join queries." },
+      { skillName: "Data Structures & Algorithms", recommendation: "Practice STAR answers on time-complexity trade-offs." },
+      { skillName: "System Architecture & Caching", recommendation: "Review cache invalidation strategies and database read bottlenecks." },
+      { skillName: "SQL & Query Optimization", recommendation: "Practice indexing, explain plans, and multi-table joins." },
+    ],
+    "Software Engineer": [
+      { skillName: "System Architecture & Caching", recommendation: "Review cache invalidation strategies and database read bottlenecks." },
+      { skillName: "Data Structures & Algorithms", recommendation: "Practice STAR answers on time-complexity trade-offs." },
+      { skillName: "SQL & Query Optimization", recommendation: "Practice indexing, explain plans, and multi-table joins." },
+    ],
+    "Frontend Developer": [
+      { skillName: "Client-side Performance", recommendation: "Review DOM rendering bottlenecks, bundle splitting, and hydration." },
+      { skillName: "React Architecture", recommendation: "Practice state management and re-render profiling." },
+    ],
+    "Backend Developer": [
+      { skillName: "Distributed Caching & Concurrency", recommendation: "Practice Redis caching and idempotent API design." },
+      { skillName: "Database Optimization", recommendation: "Review SQL indexing, connections pools, and schema design." },
     ],
     "Data Scientist": [
       { skillName: "Machine Learning Models", recommendation: "Review feature engineering and cross-validation." },
-      { skillName: "Python & Pandas", recommendation: "Practice data wrangling questions." },
-    ],
-    "UI Designer": [
-      { skillName: "Design System Governance", recommendation: "Review accessibility (a11y) standards and tokens." },
-      { skillName: "User Research & Usability", recommendation: "Structure case studies clearly." },
+      { skillName: "Python & Pandas", recommendation: "Practice data wrangling and metric calculation questions." },
     ],
     "Product Manager": [
       { skillName: "PRD & Feature Prioritization", recommendation: "Practice RICE & MoSCoW prioritization frameworks." },
-      { skillName: "Product Analytics", recommendation: "Define key metrics for new product launches." },
-    ],
-    "College Lecturer": [
-      { skillName: "Pedagogy & Curriculum Design", recommendation: "Practice active learning and syllabus structuring." },
-      { skillName: "Research & Academic Writing", recommendation: "Highlight key publications and teaching style." },
+      { skillName: "Product Analytics", recommendation: "Define telemetry and success metrics for new launches." },
     ],
   };
 
-  const targetRole = profile.targetGoal.targetRole || "Software Developer";
+  const targetRole = profile.targetGoal?.targetRole || "Software Developer";
   const gapsForRole = roleGaps[targetRole] || roleGaps["Software Developer"];
 
   const keyGaps = gapsForRole.map((g, idx) => ({
@@ -68,12 +132,14 @@ export function calculateReadiness(
 
   const nextFocusRecommendation =
     keyGaps[0]?.recommendation ||
-    "Complete your next role module and take a practice mock interview to boost readiness.";
+    "Practice mock interviews and review systems architecture to boost readiness.";
 
   return {
-    readinessPercentage: readiness,
-    roleTrack: targetRole,
+    readinessPercentage: totalReadiness,
+    roleTrack: targetRole as TargetRoleTrack,
+    categoryReadiness,
     keyGaps,
     nextFocusRecommendation,
+    calculationExplanation: "Weighted composite: Profile (20%) + Roadmap (20%) + Mock Interview (60%: Tech 25%, Problems 20%, Projects 20%, Communication 15%, Behavioral 10%, Role 10%)",
   };
 }
