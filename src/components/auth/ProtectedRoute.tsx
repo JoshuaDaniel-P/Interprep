@@ -21,8 +21,12 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   useEffect(() => {
     if (mounted && !isLoading) {
       if (!user) {
-        // Not logged in -> redirect cleanly
-        router.replace("/login");
+        // Not logged in -> redirect cleanly to login
+        if (typeof window !== "undefined") {
+          window.location.replace("/login");
+        } else {
+          router.replace("/login");
+        }
         return;
       }
 
@@ -34,9 +38,18 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     }
   }, [mounted, user, role, isLoading, requiredRole, router]);
 
-  // If unauthenticated after mounting, suppress content while redirecting
+  // If unauthenticated after mounting, show transition state instead of blank screen
   if (mounted && !isLoading && !user) {
-    return null;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#D5D8DC] p-4">
+        <div className="glass-primary p-6 rounded-3xl flex items-center gap-3 border border-white/95 shadow-sm">
+          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+            Redirecting to Sign In...
+          </span>
+        </div>
+      </div>
+    );
   }
 
   // If candidate attempting to access admin route, suppress content while redirecting

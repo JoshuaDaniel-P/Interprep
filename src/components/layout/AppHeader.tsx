@@ -41,7 +41,7 @@ export function AppHeader({ onOpenMobileNav }: AppHeaderProps) {
   const handleLogout = async () => {
     setMenuOpen(false);
     await logout();
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);

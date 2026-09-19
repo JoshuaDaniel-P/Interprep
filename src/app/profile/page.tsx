@@ -49,7 +49,7 @@ export default function ProfilePage() {
     setIsLoggingOut(true);
     await logout();
     setIsLoggingOut(false);
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   const activeProfile = {
