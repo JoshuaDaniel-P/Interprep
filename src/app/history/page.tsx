@@ -8,7 +8,7 @@ import { interviewService } from "@/services/interview.service";
 import { InterviewSession } from "@/types/interview";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
-import { PlayCircle, History, Sparkles } from "lucide-react";
+import { PlayCircle, History as HistoryIcon, Sparkles } from "lucide-react";
 
 export default function HistoryPage() {
   const { user } = useAuth();
@@ -32,11 +32,11 @@ export default function HistoryPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-6xl mx-auto pb-12">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-              <History className="w-7 h-7 text-brand-600" />
+              <HistoryIcon className="w-7 h-7 text-brand-600" />
               Interview History
             </h1>
             <p className="text-sm text-slate-500 mt-1">
