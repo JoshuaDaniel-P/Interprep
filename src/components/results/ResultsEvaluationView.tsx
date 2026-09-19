@@ -577,13 +577,13 @@ function ResultsContent() {
           </Button>
         </Link>
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Link href="/history" className="w-full sm:w-auto">
+          <Link href="/interviews/history" className="w-full sm:w-auto">
             <Button variant="outline" className="w-full gap-2">
               <History className="w-4 h-4" />
               Session History
             </Button>
           </Link>
-          <Link href="/setup" className="w-full sm:w-auto">
+          <Link href="/interviews/setup" className="w-full sm:w-auto">
             <Button size="lg" className="w-full gap-2 px-8">
               <PlayCircle className="w-5 h-5" />
               Practice Another

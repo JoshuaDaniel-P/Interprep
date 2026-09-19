@@ -127,9 +127,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
+    // Failsafe timer: Ensure isLoading can NEVER remain stuck indefinitely
+    const failsafe = setTimeout(() => {
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    }, 1200);
+
     // 1. Check if an active session is persisted in localStorage
     if (typeof window !== "undefined") {
       try {
+        const isExplicitlyLoggedOut = sessionStorage.getItem("preppilot_logged_out") === "true";
         const cached = localStorage.getItem(LOCAL_SESSION_KEY);
         if (cached) {
           const data = JSON.parse(cached);
@@ -138,18 +146,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (isMounted) {
               setUser(mock);
               setRole(data.role || "CANDIDATE");
+              setIsLoading(false); // Unblock immediately! Active session is restored.
             }
-            fetchUserProfile(data.uid).then((p) => {
-              if (isMounted) {
-                setProfile(p);
-                setIsLoading(false);
-              }
-            });
+            fetchUserProfile(data.uid)
+              .then((p) => {
+                if (isMounted && p) {
+                  setProfile(p);
+                }
+              })
+              .catch(() => {});
 
             if (!isFirebaseConfigured) {
+              clearTimeout(failsafe);
               return;
             }
           }
+        } else if (!isFirebaseConfigured && !isExplicitlyLoggedOut) {
+          // Zero-config offline / demo mode: Auto-initialize demo candidate for frictionless experience
+          const demo = SEED_ACCOUNTS["candidate@preppilot.com"];
+          const mockUser = createMockUser(demo.profileId, demo.email, demo.name);
+          if (isMounted) {
+            setUser(mockUser);
+            setRole("CANDIDATE");
+            setIsLoading(false);
+          }
+          localStorage.setItem(
+            LOCAL_SESSION_KEY,
+            JSON.stringify({
+              uid: demo.profileId,
+              email: demo.email,
+              displayName: demo.name,
+              role: "CANDIDATE",
+            })
+          );
+          fetchUserProfile(demo.profileId)
+            .then((p) => {
+              if (isMounted && p) {
+                setProfile(p);
+              }
+            })
+            .catch(() => {});
+          clearTimeout(failsafe);
+          return;
         }
       } catch (e) {
         console.warn("Session restore error:", e);
@@ -158,6 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!isFirebaseConfigured) {
       setIsLoading(false);
+      clearTimeout(failsafe);
       return;
     }
 
@@ -168,7 +207,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (firebaseUser) {
         setUser(firebaseUser);
         const verifiedRole = await verifyRoleServerSide(firebaseUser.email, firebaseUser.uid);
-        setRole(verifiedRole);
+        if (isMounted) {
+          setRole(verifiedRole);
+        }
         await fetchUserProfile(firebaseUser.uid);
         if (typeof window !== "undefined") {
           localStorage.setItem(
@@ -190,11 +231,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setRole("CANDIDATE");
         }
       }
-      setIsLoading(false);
+      if (isMounted) {
+        setIsLoading(false);
+      }
+      clearTimeout(failsafe);
     });
 
     return () => {
       isMounted = false;
+      clearTimeout(failsafe);
       unsubscribe();
     };
   }, []);
@@ -203,114 +248,121 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     const normalizedEmail = email.trim().toLowerCase();
 
-    // 1. Try Live Firebase Auth if configured
-    if (isFirebaseConfigured) {
-      try {
-        const res = await signInWithEmailAndPassword(auth, normalizedEmail, pass);
-        const firebaseUser = res.user;
+    try {
+      // 1. Try Live Firebase Auth if configured
+      if (isFirebaseConfigured) {
+        try {
+          const res = await signInWithEmailAndPassword(auth, normalizedEmail, pass);
+          const firebaseUser = res.user;
 
-        const verifiedRole = await verifyRoleServerSide(firebaseUser.email, firebaseUser.uid);
-        setRole(verifiedRole);
+          const verifiedRole = await verifyRoleServerSide(firebaseUser.email, firebaseUser.uid);
+          setRole(verifiedRole);
 
-        const userProfile = await fetchUserProfile(firebaseUser.uid);
-        const isNewUser = !userProfile || !userProfile.isOnboarded;
+          const userProfile = await fetchUserProfile(firebaseUser.uid);
+          const isNewUser = !userProfile || !userProfile.isOnboarded;
 
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("preppilot_logged_out");
+            localStorage.setItem(
+              LOCAL_SESSION_KEY,
+              JSON.stringify({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName,
+                role: verifiedRole,
+              })
+            );
+          }
+
+          return { role: verifiedRole, isNewUser };
+        } catch (err: any) {
+          const code = err?.code;
+
+          if (code === "auth/user-not-found" || code === "auth/invalid-email") {
+            throw new Error("User not found. Enter a valid ID and password.");
+          } else if (code === "auth/wrong-password") {
+            throw new Error("Incorrect password.");
+          } else if (code === "auth/invalid-credential") {
+            try {
+              const methods = await fetchSignInMethodsForEmail(auth, normalizedEmail);
+              if (methods && methods.length > 0) {
+                throw new Error("Incorrect password.");
+              } else {
+                throw new Error("User not found. Enter a valid ID and password.");
+              }
+            } catch (mErr: any) {
+              if (
+                mErr.message === "User not found. Enter a valid ID and password." ||
+                mErr.message === "Incorrect password."
+              ) {
+                throw mErr;
+              }
+            }
+          }
+          // If not a credential error (e.g. invalid API key), fall through to local demo accounts
+        }
+      }
+
+      // 2. Demo / Offline Account Fallback
+      const seed = SEED_ACCOUNTS[normalizedEmail];
+      let localUsers: Record<string, any> = {};
+      if (typeof window !== "undefined") {
+        try {
+          localUsers = JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || "{}");
+        } catch {
+          localUsers = {};
+        }
+      }
+      const localAcc = localUsers[normalizedEmail];
+
+      if (seed) {
+        if (!seed.passwords.includes(pass)) {
+          throw new Error("Incorrect password.");
+        }
+        const mockUser = createMockUser(seed.profileId, seed.email, seed.name);
+        setUser(mockUser);
+        setRole(seed.role);
+        const p = await fetchUserProfile(seed.profileId);
         if (typeof window !== "undefined") {
+          sessionStorage.removeItem("preppilot_logged_out");
           localStorage.setItem(
             LOCAL_SESSION_KEY,
             JSON.stringify({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              displayName: firebaseUser.displayName,
-              role: verifiedRole,
+              uid: seed.profileId,
+              email: seed.email,
+              displayName: seed.name,
+              role: seed.role,
             })
           );
         }
-
-        return { role: verifiedRole, isNewUser };
-      } catch (err: any) {
-        const code = err?.code;
-
-        if (code === "auth/user-not-found" || code === "auth/invalid-email") {
-          throw new Error("User not found. Enter a valid ID and password.");
-        } else if (code === "auth/wrong-password") {
+        return { role: seed.role, isNewUser: !p || !p.isOnboarded };
+      } else if (localAcc) {
+        if (localAcc.pass !== pass) {
           throw new Error("Incorrect password.");
-        } else if (code === "auth/invalid-credential") {
-          try {
-            const methods = await fetchSignInMethodsForEmail(auth, normalizedEmail);
-            if (methods && methods.length > 0) {
-              throw new Error("Incorrect password.");
-            } else {
-              throw new Error("User not found. Enter a valid ID and password.");
-            }
-          } catch (mErr: any) {
-            if (
-              mErr.message === "User not found. Enter a valid ID and password." ||
-              mErr.message === "Incorrect password."
-            ) {
-              throw mErr;
-            }
-          }
         }
-        // If not a credential error (e.g. invalid API key), fall through to local demo accounts
+        const mockUser = createMockUser(localAcc.uid, localAcc.email, localAcc.name);
+        setUser(mockUser);
+        setRole(localAcc.role || "CANDIDATE");
+        const p = await fetchUserProfile(localAcc.uid);
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("preppilot_logged_out");
+          localStorage.setItem(
+            LOCAL_SESSION_KEY,
+            JSON.stringify({
+              uid: localAcc.uid,
+              email: localAcc.email,
+              displayName: localAcc.name,
+              role: localAcc.role || "CANDIDATE",
+            })
+          );
+        }
+        return { role: localAcc.role || "CANDIDATE", isNewUser: !p || !p.isOnboarded };
       }
-    }
 
-    // 2. Demo / Offline Account Fallback
-    const seed = SEED_ACCOUNTS[normalizedEmail];
-    let localUsers: Record<string, any> = {};
-    if (typeof window !== "undefined") {
-      try {
-        localUsers = JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || "{}");
-      } catch {
-        localUsers = {};
-      }
+      throw new Error("User not found. Enter a valid ID and password.");
+    } finally {
+      setIsLoading(false);
     }
-    const localAcc = localUsers[normalizedEmail];
-
-    if (seed) {
-      if (!seed.passwords.includes(pass)) {
-        throw new Error("Incorrect password.");
-      }
-      const mockUser = createMockUser(seed.profileId, seed.email, seed.name);
-      setUser(mockUser);
-      setRole(seed.role);
-      const p = await fetchUserProfile(seed.profileId);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          LOCAL_SESSION_KEY,
-          JSON.stringify({
-            uid: seed.profileId,
-            email: seed.email,
-            displayName: seed.name,
-            role: seed.role,
-          })
-        );
-      }
-      return { role: seed.role, isNewUser: !p || !p.isOnboarded };
-    } else if (localAcc) {
-      if (localAcc.pass !== pass) {
-        throw new Error("Incorrect password.");
-      }
-      const mockUser = createMockUser(localAcc.uid, localAcc.email, localAcc.name);
-      setUser(mockUser);
-      setRole(localAcc.role || "CANDIDATE");
-      const p = await fetchUserProfile(localAcc.uid);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          LOCAL_SESSION_KEY,
-          JSON.stringify({
-            uid: localAcc.uid,
-            email: localAcc.email,
-            displayName: localAcc.name,
-            role: localAcc.role || "CANDIDATE",
-          })
-        );
-      }
-      return { role: localAcc.role || "CANDIDATE", isNewUser: !p || !p.isOnboarded };
-    }
-
-    throw new Error("User not found. Enter a valid ID and password.");
   };
 
   const signUpWithEmail = async (name: string, email: string, pass: string): Promise<AuthResult> => {
@@ -318,180 +370,190 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const normalizedEmail = email.trim().toLowerCase();
     const cleanName = name.trim();
 
-    let uid = `cand-${Date.now()}`;
-
-    if (isFirebaseConfigured) {
-      try {
-        const res = await createUserWithEmailAndPassword(auth, normalizedEmail, pass);
-        const firebaseUser = res.user;
-        uid = firebaseUser.uid;
-
-        try {
-          await updateProfile(firebaseUser, { displayName: cleanName });
-        } catch (profileErr) {
-          console.warn("Could not set displayName on Firebase Auth:", profileErr);
-        }
-      } catch (err: any) {
-        if (err.code === "auth/email-already-in-use") {
-          throw new Error("An account with this email already exists. Please log in.");
-        } else if (err.code === "auth/weak-password") {
-          throw new Error("Password should be at least 6 characters long.");
-        } else if (err.code === "auth/invalid-email") {
-          throw new Error("Please enter a valid email address.");
-        }
-        console.warn("Firebase Auth registration fallback:", err?.message);
-      }
-    }
-
-    // Initialize candidate profile (strictly CANDIDATE role)
-    const newProfile: CandidateProfile = {
-      uid,
-      email: normalizedEmail,
-      fullName: cleanName,
-      status: "Student",
-      isOnboarded: false,
-      readinessPercentage: 20,
-      skills: [],
-      projects: [],
-      experience: [],
-      achievements: [],
-      education: {
-        highestQualification: "Bachelor's Degree",
-        degree: "Computer Science",
-        branch: "Engineering",
-        institution: "",
-        graduationYear: new Date().getFullYear(),
-        cgpaOrPercentage: "",
-        strongSubjects: [],
-        weakSubjects: [],
-      },
-      targetGoal: {
-        targetRole: "Software Developer",
-        targetCompanyType: "Product Company",
-        targetIndustry: "Technology",
-        interviewType: "Mixed",
-        difficulty: "Realistic",
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
     try {
-      await candidateService.saveProfile(newProfile);
-    } catch (saveErr) {
-      console.warn("Profile save notice:", saveErr);
-    }
+      let uid = `cand-${Date.now()}`;
 
-    // Save to local users store for offline login
-    if (typeof window !== "undefined") {
-      try {
-        const localUsers = JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || "{}");
-        localUsers[normalizedEmail] = {
-          uid,
-          email: normalizedEmail,
-          pass,
-          name: cleanName,
-          role: "CANDIDATE",
-        };
-        localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(localUsers));
-      } catch {
-        // ignore
+      if (isFirebaseConfigured) {
+        try {
+          const res = await createUserWithEmailAndPassword(auth, normalizedEmail, pass);
+          const firebaseUser = res.user;
+          uid = firebaseUser.uid;
+
+          try {
+            await updateProfile(firebaseUser, { displayName: cleanName });
+          } catch (profileErr) {
+            console.warn("Could not set displayName on Firebase Auth:", profileErr);
+          }
+        } catch (err: any) {
+          if (err.code === "auth/email-already-in-use") {
+            throw new Error("An account with this email already exists. Please log in.");
+          } else if (err.code === "auth/weak-password") {
+            throw new Error("Password should be at least 6 characters long.");
+          } else if (err.code === "auth/invalid-email") {
+            throw new Error("Please enter a valid email address.");
+          }
+          console.warn("Firebase Auth registration fallback:", err?.message);
+        }
       }
+
+      // Initialize candidate profile (strictly CANDIDATE role)
+      const newProfile: CandidateProfile = {
+        uid,
+        email: normalizedEmail,
+        fullName: cleanName,
+        status: "Student",
+        isOnboarded: false,
+        readinessPercentage: 20,
+        skills: [],
+        projects: [],
+        experience: [],
+        achievements: [],
+        education: {
+          highestQualification: "Bachelor's Degree",
+          degree: "Computer Science",
+          branch: "Engineering",
+          institution: "",
+          graduationYear: new Date().getFullYear(),
+          cgpaOrPercentage: "",
+          strongSubjects: [],
+          weakSubjects: [],
+        },
+        targetGoal: {
+          targetRole: "Software Developer",
+          targetCompanyType: "Product Company",
+          targetIndustry: "Technology",
+          interviewType: "Mixed",
+          difficulty: "Realistic",
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      try {
+        await candidateService.saveProfile(newProfile);
+      } catch (saveErr) {
+        console.warn("Profile save notice:", saveErr);
+      }
+
+      // Save to local users store for offline login
+      if (typeof window !== "undefined") {
+        try {
+          const localUsers = JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || "{}");
+          localUsers[normalizedEmail] = {
+            uid,
+            email: normalizedEmail,
+            pass,
+            name: cleanName,
+            role: "CANDIDATE",
+          };
+          localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(localUsers));
+        } catch {
+          // ignore
+        }
+      }
+
+      const mockUser = createMockUser(uid, normalizedEmail, cleanName);
+      setUser(mockUser);
+      setProfile(newProfile);
+      setRole("CANDIDATE");
+
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("preppilot_logged_out");
+        localStorage.setItem(
+          LOCAL_SESSION_KEY,
+          JSON.stringify({
+            uid,
+            email: normalizedEmail,
+            displayName: cleanName,
+            role: "CANDIDATE",
+          })
+        );
+      }
+
+      return { role: "CANDIDATE", isNewUser: true };
+    } finally {
+      setIsLoading(false);
     }
-
-    const mockUser = createMockUser(uid, normalizedEmail, cleanName);
-    setUser(mockUser);
-    setProfile(newProfile);
-    setRole("CANDIDATE");
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        LOCAL_SESSION_KEY,
-        JSON.stringify({
-          uid,
-          email: normalizedEmail,
-          displayName: cleanName,
-          role: "CANDIDATE",
-        })
-      );
-    }
-
-    setIsLoading(false);
-    return { role: "CANDIDATE", isNewUser: true };
   };
 
   const signInWithGoogle = async (): Promise<AuthResult> => {
     setIsLoading(true);
-    if (isFirebaseConfigured) {
-      try {
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: "select_account" });
-        const res = await signInWithPopup(auth, provider);
-        const firebaseUser = res.user;
+    try {
+      if (isFirebaseConfigured) {
+        try {
+          const provider = new GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: "select_account" });
+          const res = await signInWithPopup(auth, provider);
+          const firebaseUser = res.user;
 
-        const verifiedRole = await verifyRoleServerSide(firebaseUser.email, firebaseUser.uid);
-        setRole(verifiedRole);
+          const verifiedRole = await verifyRoleServerSide(firebaseUser.email, firebaseUser.uid);
+          setRole(verifiedRole);
 
-        let existingProfile = await candidateService.getProfile(firebaseUser.uid);
-        const isNew = !existingProfile.fullName && !existingProfile.isOnboarded;
+          let existingProfile = await candidateService.getProfile(firebaseUser.uid);
+          const isNew = !existingProfile.fullName && !existingProfile.isOnboarded;
 
-        if (isNew) {
-          const initialProfile: CandidateProfile = {
-            ...existingProfile,
-            uid: firebaseUser.uid,
-            email: firebaseUser.email || "",
-            fullName: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "Candidate",
-            isOnboarded: false,
-            readinessPercentage: 20,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          await candidateService.saveProfile(initialProfile);
-          setProfile(initialProfile);
-        } else {
-          setProfile(existingProfile);
-        }
-
-        if (typeof window !== "undefined") {
-          localStorage.setItem(
-            LOCAL_SESSION_KEY,
-            JSON.stringify({
+          if (isNew) {
+            const initialProfile: CandidateProfile = {
+              ...existingProfile,
               uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              displayName: firebaseUser.displayName,
-              role: verifiedRole,
-            })
-          );
+              email: firebaseUser.email || "",
+              fullName: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "Candidate",
+              isOnboarded: false,
+              readinessPercentage: 20,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            await candidateService.saveProfile(initialProfile);
+            setProfile(initialProfile);
+          } else {
+            setProfile(existingProfile);
+          }
+
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("preppilot_logged_out");
+            localStorage.setItem(
+              LOCAL_SESSION_KEY,
+              JSON.stringify({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName,
+                role: verifiedRole,
+              })
+            );
+          }
+
+          return { role: verifiedRole, isNewUser: isNew };
+        } catch (e: any) {
+          console.warn("Google Auth notice, using demo candidate session:", e?.message);
         }
-
-        return { role: verifiedRole, isNewUser: isNew };
-      } catch (e: any) {
-        console.warn("Google Auth notice, using demo candidate session:", e?.message);
       }
-    }
 
-    // Fallback to demo candidate for frictionless access
-    const demoCandidate = SEED_ACCOUNTS["candidate@preppilot.com"];
-    const mockUser = createMockUser(demoCandidate.profileId, demoCandidate.email, demoCandidate.name);
-    setUser(mockUser);
-    setRole("CANDIDATE");
-    const p = await fetchUserProfile(demoCandidate.profileId);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        LOCAL_SESSION_KEY,
-        JSON.stringify({
-          uid: demoCandidate.profileId,
-          email: demoCandidate.email,
-          displayName: demoCandidate.name,
-          role: "CANDIDATE",
-        })
-      );
+      // Fallback to demo candidate for frictionless access
+      const demoCandidate = SEED_ACCOUNTS["candidate@preppilot.com"];
+      const mockUser = createMockUser(demoCandidate.profileId, demoCandidate.email, demoCandidate.name);
+      setUser(mockUser);
+      setRole("CANDIDATE");
+      const p = await fetchUserProfile(demoCandidate.profileId);
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("preppilot_logged_out");
+        localStorage.setItem(
+          LOCAL_SESSION_KEY,
+          JSON.stringify({
+            uid: demoCandidate.profileId,
+            email: demoCandidate.email,
+            displayName: demoCandidate.name,
+            role: "CANDIDATE",
+          })
+        );
+      }
+      return { role: "CANDIDATE", isNewUser: false };
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-    return { role: "CANDIDATE", isNewUser: false };
   };
 
   const logout = async (): Promise<void> => {
+    setIsLoading(true);
     try {
       await firebaseSignOut(auth);
     } catch (e) {
@@ -503,7 +565,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.removeItem(LOCAL_SESSION_KEY);
       sessionStorage.clear();
+      sessionStorage.setItem("preppilot_logged_out", "true");
     }
+    setIsLoading(false);
   };
 
   const refreshProfile = async (): Promise<CandidateProfile | null> => {
