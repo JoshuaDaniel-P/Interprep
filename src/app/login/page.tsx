@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { StudioGlassEnvironment } from "@/components/layout/StudioGlassEnvironment";
 import { Sparkles, Mail, Lock, AlertCircle, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
@@ -60,18 +61,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Ambient Studio Refraction Background */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-60">
-        <div className="absolute -top-40 -left-40 w-[35rem] h-[35rem] rounded-full bg-blue-200/25 blur-3xl" />
-        <div className="absolute top-1/3 -right-20 w-[40rem] h-[40rem] rounded-full bg-indigo-100/30 blur-3xl" />
-        <div className="absolute -bottom-32 left-1/4 w-[45rem] h-[45rem] rounded-full bg-slate-200/40 blur-3xl" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Studio Glass Environment with 3D Spheres & Floor Light */}
+      <StudioGlassEnvironment />
 
       <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex w-12 h-12 rounded-2xl bg-blue-600 items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <div className="glass-icon-bubble w-12 h-12 text-blue-600 mx-auto shadow-md">
             <Sparkles className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-slate-900">
@@ -83,12 +80,9 @@ export default function LoginPage() {
         </div>
 
         {/* Login Liquid Glass Panel */}
-        <div
-          className="glass liquid-glass-panel p-7 sm:p-8 space-y-5"
-          data-config='{"refraction": 0.25, "edgeHighlight": 0.9, "specular": 0.8, "zRadius": 22, "cornerRadius": 32}'
-        >
+        <div className="glass-primary p-7 sm:p-8 space-y-5">
           <div className="text-center space-y-1">
-            <h2 className="text-xl font-extrabold text-slate-900">
+            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Sign In to Your Account
             </h2>
             <p className="text-xs text-slate-500 font-semibold">
@@ -142,8 +136,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="glass liquid-glass-btn-primary w-full py-3 text-xs font-black gap-2 shadow-md"
-              data-config='{"button": true, "zRadius": 14, "cornerRadius": 9999}'
+              className="glass-button-primary w-full py-3 text-xs font-black gap-2 shadow-md"
             >
               <span>{isSubmitting ? "Authenticating..." : "Log in"}</span>
               <ArrowRight className="w-4 h-4" />
@@ -164,8 +157,7 @@ export default function LoginPage() {
             type="button"
             disabled={isSubmitting}
             onClick={handleGoogleLogin}
-            className="glass liquid-glass-btn-secondary w-full py-2.5 px-4 text-xs font-extrabold gap-3 text-slate-800"
-            data-config='{"button": true, "zRadius": 12, "cornerRadius": 9999}'
+            className="glass-button-secondary w-full py-2.5 px-4 text-xs font-extrabold gap-3 text-slate-800"
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path

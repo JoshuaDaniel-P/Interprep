@@ -78,31 +78,31 @@ export default function ProfilePage() {
       <AppShell>
         <div className="space-y-6 max-w-4xl mx-auto">
           {/* Header Banner */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-card flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="glass-primary p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-brand-100 text-brand-700 font-extrabold flex items-center justify-center text-2xl border border-brand-200 shrink-0">
+              <div className="glass-icon-bubble w-16 h-16 rounded-3xl text-2xl font-black text-blue-600 shadow-md">
                 {activeProfile.fullName.charAt(0)}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
                     {activeProfile.fullName}
                   </h1>
                   <Badge variant="brand" size="sm">
                     {activeProfile.targetGoal?.targetRole || "Software Developer"}
                   </Badge>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">{activeProfile.email}</p>
-                <p className="text-xs text-slate-600 mt-0.5 font-medium">{activeProfile.city} • {activeProfile.status}</p>
+                <p className="text-xs text-slate-500 mt-1 font-medium">{activeProfile.email}</p>
+                <p className="text-xs text-slate-600 mt-0.5 font-bold">{activeProfile.city} • {activeProfile.status}</p>
               </div>
             </div>
 
             {/* Preparation Score Dial */}
-            <div className="text-center sm:text-right bg-brand-50/60 border border-brand-200 rounded-2xl p-4 min-w-[160px]">
-              <span className="text-[10px] font-bold text-brand-700 uppercase tracking-wider block">
+            <div className="text-center sm:text-right glass-secondary p-4 min-w-[160px] rounded-3xl border border-white/95 shadow-md">
+              <span className="text-[10px] font-black text-blue-900 uppercase tracking-wider block">
                 Readiness Score
               </span>
-              <div className="text-3xl font-black text-brand-900 mt-0.5">
+              <div className="text-3xl font-black text-blue-950 mt-0.5">
                 {activeProfile.readinessPercentage || 68}%
               </div>
             </div>
@@ -139,8 +139,8 @@ export default function ProfilePage() {
           {/* Resume & CV Management Card */}
           <Card>
             <CardHeader className="py-4 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-brand-600" />
+              <CardTitle className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-600" />
                 Resume & Portfolio File
               </CardTitle>
               <Button
@@ -155,16 +155,16 @@ export default function ProfilePage() {
               </Button>
             </CardHeader>
             <CardContent className="p-6 pt-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-white/70 border border-white/95 gap-4 shadow-xs backdrop-blur-sm">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-black text-xs shrink-0 border border-rose-200">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-black text-xs shrink-0 border border-rose-200 shadow-2xs">
                     PDF
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-900 truncate max-w-xs sm:max-w-md">
+                    <p className="text-xs font-extrabold text-slate-900 truncate max-w-xs sm:max-w-md">
                       {resumeName}
                     </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-slate-500 mt-0.5 font-medium">
                       Uploaded on {resumeUploadedAt} • Extracted 3 skills & 1 project
                     </p>
                   </div>
@@ -199,23 +199,23 @@ export default function ProfilePage() {
           {/* Education Card */}
           <Card>
             <CardHeader className="py-4">
-              <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-brand-600" />
+              <CardTitle className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 text-blue-600" />
                 Education Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 pt-2 space-y-2 text-xs text-slate-700">
+            <CardContent className="p-6 pt-2 space-y-2 text-xs text-slate-700 font-medium">
               <p>
-                <strong className="text-slate-900">Degree:</strong> {activeProfile.education?.degree || "Not specified"}
+                <strong className="text-slate-900 font-bold">Degree:</strong> {activeProfile.education?.degree || "Not specified"}
               </p>
               <p>
-                <strong className="text-slate-900">Institution / University:</strong> {activeProfile.education?.institution || "Not specified"}
+                <strong className="text-slate-900 font-bold">Institution / University:</strong> {activeProfile.education?.institution || "Not specified"}
               </p>
               <p>
-                <strong className="text-slate-900">Graduation Year:</strong> {activeProfile.education?.graduationYear || 2026}
+                <strong className="text-slate-900 font-bold">Graduation Year:</strong> {activeProfile.education?.graduationYear || 2026}
               </p>
               <p>
-                <strong className="text-slate-900">CGPA / Percentage:</strong> {activeProfile.education?.cgpaOrPercentage || "N/A"}
+                <strong className="text-slate-900 font-bold">CGPA / Percentage:</strong> {activeProfile.education?.cgpaOrPercentage || "N/A"}
               </p>
             </CardContent>
           </Card>
@@ -223,16 +223,16 @@ export default function ProfilePage() {
           {/* Technical Skills */}
           <Card>
             <CardHeader className="py-4">
-              <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Code className="w-4 h-4 text-brand-600" />
+              <CardTitle className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <Code className="w-4 h-4 text-blue-600" />
                 Technical Skills & Proficiency
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 pt-2">
               <div className="flex flex-wrap gap-2">
                 {activeProfile.skills?.map((s: any, idx: number) => (
-                  <span key={idx} className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
-                    {s.name} <span className="text-brand-700 font-normal">({s.proficiency || "Intermediate"})</span>
+                  <span key={idx} className="glass-capsule px-3.5 py-1.5 text-xs font-bold text-slate-800">
+                    {s.name} <span className="text-blue-700 font-medium">({s.proficiency || "Intermediate"})</span>
                   </span>
                 ))}
               </div>
@@ -242,20 +242,20 @@ export default function ProfilePage() {
           {/* Featured Projects */}
           <Card>
             <CardHeader className="py-4">
-              <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Rocket className="w-4 h-4 text-brand-600" />
+              <CardTitle className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <Rocket className="w-4 h-4 text-blue-600" />
                 Featured Projects (AI Questions Source)
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 pt-2 space-y-4">
               {activeProfile.projects?.map((p: any, idx: number) => (
-                <div key={idx} className="p-4 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1 text-xs">
-                  <h4 className="font-bold text-slate-900 text-sm">{p.name}</h4>
-                  <p className="text-slate-600">
-                    <strong className="text-slate-900">Technologies:</strong> {Array.isArray(p.technologies) ? p.technologies.join(", ") : p.technologies}
+                <div key={idx} className="p-4 rounded-2xl bg-white/70 border border-white/95 space-y-1.5 text-xs shadow-xs backdrop-blur-sm">
+                  <h4 className="font-extrabold text-slate-900 text-sm tracking-tight">{p.name}</h4>
+                  <p className="text-slate-600 font-medium">
+                    <strong className="text-slate-900 font-bold">Technologies:</strong> {Array.isArray(p.technologies) ? p.technologies.join(", ") : p.technologies}
                   </p>
-                  <p className="text-slate-600">
-                    <strong className="text-slate-900">Bottlenecks & Solution:</strong> {p.challenges}
+                  <p className="text-slate-600 font-medium">
+                    <strong className="text-slate-900 font-bold">Bottlenecks & Solution:</strong> {p.challenges}
                   </p>
                 </div>
               ))}

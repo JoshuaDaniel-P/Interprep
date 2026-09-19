@@ -13,24 +13,24 @@ export function ContinueWhereYouLeftOffCard({
 }: ContinueWhereYouLeftOffCardProps) {
   return (
     <div
-      className="glass liquid-glass-panel p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
-      data-config='{"refraction": 0.22, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 18, "cornerRadius": 28}'
+      className="glass-secondary p-7 sm:p-8 rounded-[30px] flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-8 border-white/95 relative overflow-hidden"
+      data-config='{"refraction": 0.22, "edgeHighlight": 0.85, "specular": 0.75, "zRadius": 20, "cornerRadius": 30}'
     >
-      <div className="flex items-center gap-4 flex-1">
-        {/* Liquid Icon Bubble */}
-        <div className="w-12 h-12 mockup-icon-circle text-blue-600 shrink-0">
+      <div className="flex items-center gap-5 flex-1 min-w-0 w-full sm:w-auto">
+        {/* Liquid Glass Icon Bubble */}
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center glass-capsule text-blue-600 border-white/90 shadow-xs shrink-0">
           <Sparkles className="w-5 h-5" />
         </div>
 
         <div className="space-y-1 flex-1 min-w-0">
-          <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider block">
+          <span className="text-[11px] font-black text-blue-600 uppercase tracking-wider block">
             NEXT INTERVIEW PRACTICE SESSION
           </span>
-          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 truncate">
+          <h3 className="text-base sm:text-lg lg:text-xl font-black text-slate-900 tracking-tight leading-snug">
             {lastSessionTitle}
           </h3>
-          <p className="text-xs text-slate-500 font-semibold">
-            Calibrated for <strong className="text-slate-800">{targetRole}</strong> • Real-time AI evaluation
+          <p className="text-xs sm:text-sm text-slate-500 font-semibold">
+            Calibrated for <strong className="text-slate-800 font-bold">{targetRole}</strong> • Real-time AI evaluation
           </p>
         </div>
       </div>
@@ -38,7 +38,7 @@ export function ContinueWhereYouLeftOffCard({
       <div className="shrink-0 w-full sm:w-auto">
         <Link
           href="/interviews/setup"
-          className="glass liquid-glass-btn-secondary px-5 py-2.5 text-xs font-black gap-2 w-full sm:w-auto inline-flex items-center justify-center"
+          className="glass-button-secondary px-7 py-3 text-xs sm:text-sm font-black gap-2.5 w-full sm:w-auto inline-flex items-center justify-center shadow-md active:scale-[0.98]"
           data-config='{"button": true, "zRadius": 12, "cornerRadius": 9999}'
         >
           <PlayCircle className="w-4 h-4 text-blue-600" />

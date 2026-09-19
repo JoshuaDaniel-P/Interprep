@@ -31,11 +31,11 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 flex flex-col h-screen fixed inset-y-0 left-0 z-50 hidden md:flex transition-all duration-300 pointer-events-auto select-none">
+    <aside className="w-64 flex flex-col h-screen fixed inset-y-0 left-0 z-50 hidden md:flex transition-all duration-300 pointer-events-auto select-none bg-white/20 backdrop-blur-md border-r border-white/60">
       {/* Brand Header */}
-      <div className="h-20 px-8 flex items-center gap-3">
-        <Link href="/dashboard" className="flex items-center gap-3 cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-md">
+      <div className="h-20 px-7 flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-3 cursor-pointer group">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-blue-500/25 border border-white/80 group-hover:scale-105 transition-transform">
             <Sparkles className="w-4 h-4" />
           </div>
           <span className="font-extrabold text-xl tracking-tight text-slate-900">
@@ -45,8 +45,8 @@ export function AppSidebar() {
       </div>
 
       {/* Navigation Links */}
-      <div className="flex-1 py-4 px-6 space-y-2">
-        <nav className="space-y-2">
+      <div className="flex-1 py-6 px-5 space-y-2">
+        <nav className="space-y-2.5">
           {sidebarNavigation.map((item) => {
             const isActive =
               item.href === "/dashboard"
@@ -59,38 +59,42 @@ export function AppSidebar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 cursor-pointer pointer-events-auto relative z-10",
+                  "flex items-center gap-3.5 px-4 py-3 rounded-full text-xs font-black transition-all duration-200 cursor-pointer pointer-events-auto relative z-10",
                   isActive
-                    ? "bg-white/80 text-blue-600 border border-white shadow-md shadow-blue-500/10 backdrop-blur-md"
-                    : "text-slate-500 hover:text-slate-900 hover:bg-white/40"
+                    ? "glass-capsule text-slate-950 shadow-md shadow-blue-500/10 border-white/95 bg-white/75"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-white/50"
                 )}
               >
-                <Icon
+                <div
                   className={cn(
-                    "w-4 h-4 transition-colors",
-                    isActive ? "text-blue-600" : "text-slate-400"
+                    "w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                    isActive
+                      ? "bg-blue-500/20 text-blue-600 border border-blue-400/30"
+                      : "text-slate-400"
                   )}
-                />
-                {item.name}
+                >
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span className="tracking-tight">{item.name}</span>
               </Link>
             );
           })}
         </nav>
       </div>
 
-      {/* Footer Branding & Liquid Badge (Matching Mockup) */}
-      <div className="p-6 space-y-6">
-        <div className="space-y-0.5 text-slate-400 text-xs font-semibold leading-tight px-2">
+      {/* Footer Branding & Liquid Badge */}
+      <div className="p-6 space-y-5">
+        <div className="space-y-0.5 text-slate-400 text-[11px] font-semibold leading-tight px-1">
           <p>Better</p>
           <p>Interviews</p>
           <p>A Brighter</p>
-          <p className="text-slate-500 font-bold">You</p>
-          <p className="pt-1 text-slate-300">— —</p>
+          <p className="text-slate-600 font-extrabold">You</p>
+          <p className="pt-1 text-slate-300 tracking-widest">— —</p>
         </div>
 
         {/* PrepPilot v1.0.0 Liquid Glass Capsule Badge */}
-        <div className="p-3 mockup-glass-card flex items-center gap-2.5 rounded-2xl bg-white/70 shadow-sm border-white">
-          <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-600">
+        <div className="glass-capsule p-3 flex items-center gap-3 rounded-2xl shadow-xs border-white/95">
+          <div className="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-600 shrink-0 border border-blue-400/30">
             <Sparkles className="w-3.5 h-3.5" />
           </div>
           <div>

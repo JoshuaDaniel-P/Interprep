@@ -94,45 +94,50 @@ export default function PerformancePage() {
   return (
     <ProtectedRoute>
       <AppShell>
-        <div className="space-y-6 pb-12">
-          {/* Page Header Header Panel */}
-          <div className="glass liquid-glass-panel p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 mockup-pill-badge">
-                <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
+        <div className="space-y-10 sm:space-y-12 lg:space-y-14 pb-16">
+          {/* Page Header Panel */}
+          <div className="glass-primary p-8 sm:p-12 rounded-[36px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 border-white/95 animate-section-stagger-1">
+            <div className="space-y-2">
+              <div className="glass-capsule px-4 py-1.5 text-xs font-black text-blue-800 gap-2 inline-flex items-center shadow-xs border-white/95">
+                <TrendingUp className="w-4 h-4 text-blue-600" />
                 AI Evaluator Analytics
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 leading-tight">
                 Performance & Dimension Breakdown
               </h1>
-              <p className="text-xs sm:text-sm text-slate-600 font-semibold max-w-xl">
+              <p className="text-sm sm:text-base text-slate-600 font-medium max-w-xl leading-relaxed">
                 Track your mock interview score progress, evaluation sub-scores, technical depth, and recurring improvement focus areas.
               </p>
             </div>
 
             <Link
               href="/interviews/setup"
-              className="glass liquid-glass-btn-primary px-6 py-3 text-xs font-black gap-2 w-full sm:w-auto inline-flex items-center justify-center"
-              data-config='{"button": true, "zRadius": 14, "cornerRadius": 9999}'
+              className="glass-button-primary px-8 py-3.5 text-sm font-black gap-3 w-full sm:w-auto inline-flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20"
             >
-              <PlayCircle className="w-4 h-4 text-white" />
+              <PlayCircle className="w-5 h-5 text-white" />
               Start New Interview
             </Link>
           </div>
 
           {/* 1. Core Evaluation Metrics */}
-          {metrics && <MetricsGrid metrics={metrics} />}
+          {metrics && (
+            <div className="animate-section-stagger-2">
+              <MetricsGrid metrics={metrics} />
+            </div>
+          )}
 
           {/* 2. Actionable Improvement Insights & Skill Gaps */}
-          <ImprovementInsightCard
-            recommendation={metrics?.topRecommendation || "Focus on quantifying project impact (e.g., latency, throughput, scale) in STAR technical responses."}
-            improvementNotice={improvementNotice}
-            recurringGaps={recurringGaps}
-          />
+          <div className="animate-section-stagger-3">
+            <ImprovementInsightCard
+              recommendation={metrics?.topRecommendation || "Focus on quantifying project impact (e.g., latency, throughput, scale) in STAR technical responses."}
+              improvementNotice={improvementNotice}
+              recurringGaps={recurringGaps}
+            />
+          </div>
 
           {/* 3. Performance Overview & Skill Breakdown */}
           {metrics && skills && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 animate-section-stagger-4">
               <PerformanceOverview trendData={metrics.scoreTrend} />
               <SkillBreakdown skills={skills} />
             </div>

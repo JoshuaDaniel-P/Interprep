@@ -21,20 +21,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none rounded-xl active:scale-[0.98]";
+      "inline-flex items-center justify-center font-extrabold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none rounded-full active:scale-[0.97] select-none cursor-pointer";
 
     const variants = {
-      primary: "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-xs",
-      secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200 active:bg-slate-300",
-      outline: "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 active:bg-slate-100",
-      ghost: "text-slate-700 hover:bg-slate-100 active:bg-slate-200",
-      danger: "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-xs",
+      primary: "glass-button-primary",
+      secondary: "glass-button-secondary",
+      outline: "glass-button-secondary",
+      ghost: "text-slate-700 hover:bg-white/80 active:bg-white/90 hover:shadow-xs",
+      danger: "bg-rose-600 hover:bg-rose-700 text-white shadow-xs",
     };
 
     const sizes = {
-      sm: "h-9 px-3.5 text-xs rounded-lg",
-      md: "h-10 px-4 text-sm",
-      lg: "h-12 px-6 text-base font-bold",
+      sm: "h-8 sm:h-9 px-4 text-xs",
+      md: "h-10 px-5 text-xs sm:text-sm",
+      lg: "h-12 px-7 text-sm sm:text-base",
     };
 
     return (

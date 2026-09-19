@@ -137,9 +137,9 @@ export function InterviewSetupForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8 sm:space-y-10">
       {/* 1. Target Role */}
-      <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.22, "edgeHighlight": 0.85, "specular": 0.75, "zRadius": 18, "cornerRadius": 28}'>
+      <div className="glass-primary p-7 sm:p-8 rounded-[30px] border-white/95">
         <SelectCardGroup
           label="1. Target Role"
           description="Select the specific engineering or business role you are preparing for."
@@ -151,8 +151,8 @@ export function InterviewSetupForm() {
       </div>
 
       {/* 2. Target Company & Experience Level */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="glass liquid-glass-panel p-6 sm:p-7 space-y-4" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="glass-primary p-7 sm:p-8 rounded-[30px] border-white/95 space-y-5">
           <SelectCardGroup
             label="2. Company Type"
             description="Calibrates the interviewer's perspective and expectations."
@@ -162,9 +162,9 @@ export function InterviewSetupForm() {
             columns={2}
           />
 
-          <div className="pt-3 border-t border-slate-200/60">
-            <label className="text-xs font-extrabold text-slate-800 block mb-1.5 flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-blue-600" />
+          <div className="pt-4 border-t border-slate-200/60">
+            <label className="text-xs font-black text-slate-800 block mb-2 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-blue-600" />
               Target Company Name (Optional)
             </label>
             <input
@@ -172,12 +172,13 @@ export function InterviewSetupForm() {
               placeholder="e.g., Google, Amazon, Stripe, Razorpay..."
               value={config.company || ""}
               onChange={(e) => setConfig((prev) => ({ ...prev, company: e.target.value }))}
-              className="w-full p-3 text-xs text-slate-900 bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-semibold shadow-xs"
+              className="w-full p-3.5 text-xs text-slate-900 bg-white/90 border border-white/95 rounded-2xl focus:ring-2 focus:ring-blue-500 font-semibold shadow-xs"
+              style={{ boxShadow: "inset 0 1.5px 2px rgba(0, 0, 0, 0.04)" }}
             />
           </div>
         </div>
 
-        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+        <div className="glass-primary p-7 sm:p-8 rounded-[30px] border-white/95">
           <SelectCardGroup
             label="3. Experience Level"
             description="Adjusts question depth and seniority expectations."
@@ -190,8 +191,8 @@ export function InterviewSetupForm() {
       </div>
 
       {/* 4. Interview Type & Difficulty */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="glass-primary p-7 sm:p-8 rounded-[30px] border-white/95">
           <SelectCardGroup
             label="4. Interview Focus"
             description="Select the focus area of this session."
@@ -202,7 +203,7 @@ export function InterviewSetupForm() {
           />
         </div>
 
-        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+        <div className="glass-primary p-7 sm:p-8 rounded-[30px] border-white/95">
           <SelectCardGroup
             label="5. Interview Difficulty"
             description="Select how the AI interviewer adapts follow-up depth."
@@ -215,8 +216,8 @@ export function InterviewSetupForm() {
       </div>
 
       {/* 6. Question Count & Interview Mode */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="glass-primary p-7 sm:p-8 rounded-[30px] border-white/95">
           <SelectCardGroup
             label="6. Question Count"
             description="Choose question length or auto-tune per stream."
@@ -227,7 +228,7 @@ export function InterviewSetupForm() {
           />
         </div>
 
-        <div className="glass liquid-glass-panel p-6 sm:p-7" data-config='{"refraction": 0.2, "edgeHighlight": 0.8, "specular": 0.7, "zRadius": 16, "cornerRadius": 24}'>
+        <div className="glass-primary p-7 sm:p-8 rounded-[30px] border-white/95">
           <SelectCardGroup
             label="7. Interview Mode"
             description="Choose how you want to conduct the interview."
@@ -240,14 +241,14 @@ export function InterviewSetupForm() {
       </div>
 
       {/* Summary Banner & Action */}
-      <div className="glass liquid-glass-panel p-6 flex flex-col sm:flex-row items-center justify-between gap-4" data-config='{"refraction": 0.25, "edgeHighlight": 0.9, "specular": 0.8, "zRadius": 20, "cornerRadius": 28}'>
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-blue-600/15 text-blue-600 flex items-center justify-center shrink-0 border border-blue-500/20">
-            <Sparkles className="w-5 h-5" />
+      <div className="glass-primary p-8 rounded-[32px] border-white/95 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-blue-600/15 text-blue-600 flex items-center justify-center shrink-0 border border-blue-500/20 shadow-xs">
+            <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900">Summary Configuration</h3>
-            <p className="text-xs text-slate-600 font-semibold mt-0.5">
+            <h3 className="text-base font-black text-slate-900 tracking-tight">Summary Configuration</h3>
+            <p className="text-xs sm:text-sm text-slate-600 font-semibold mt-0.5">
               {config.targetRole} • {config.company || config.companyType} • {config.difficulty} Difficulty • {config.mode} Mode
             </p>
           </div>
@@ -256,8 +257,7 @@ export function InterviewSetupForm() {
         <button
           type="submit"
           disabled={isStarting}
-          className="glass liquid-glass-btn-primary px-8 py-3 text-xs font-black gap-2.5 w-full sm:w-auto"
-          data-config='{"button": true, "zRadius": 14, "cornerRadius": 9999}'
+          className="glass-button-primary px-9 py-4 text-sm font-black gap-3 w-full sm:w-auto shadow-lg shadow-blue-500/20 active:scale-[0.98]"
         >
           <PlayCircle className="w-5 h-5 text-white" />
           {isStarting ? "Initializing AI Session..." : "Start Realistic Interview"}

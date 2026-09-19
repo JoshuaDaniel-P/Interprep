@@ -59,74 +59,75 @@ export default function InterviewsPage() {
   return (
     <ProtectedRoute>
       <AppShell>
-        <div className="space-y-8 max-w-6xl mx-auto pb-12">
+        <div className="space-y-10 sm:space-y-12 lg:space-y-14 pb-16">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-[11px] font-black text-blue-700 mb-2">
-                <Sparkles className="w-3.5 h-3.5" />
+          <div className="glass-primary p-8 sm:p-12 rounded-[36px] flex flex-col sm:flex-row sm:items-center justify-between gap-8 border-white/95 animate-section-stagger-1">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 glass-capsule px-4 py-1.5 text-xs font-black text-blue-700 border-white/95 shadow-xs">
+                <Sparkles className="w-4 h-4 text-blue-600" />
                 Adaptive AI Simulator
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 leading-tight">
                 Interview Simulations
               </h1>
-              <p className="text-sm text-slate-500 font-semibold mt-1">
-                Configure customized mock interview sessions calibrated for {targetRole}.
+              <p className="text-sm sm:text-base text-slate-600 font-medium mt-1 leading-relaxed">
+                Configure customized mock interview sessions calibrated for <strong className="text-slate-900 font-bold">{targetRole}</strong>.
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4 shrink-0">
               <Link
                 href="/interviews/history"
-                className="liquid-glass-btn-secondary px-4 py-2.5 text-xs font-bold gap-2 inline-flex items-center"
+                className="glass-button-secondary px-6 py-3 text-xs sm:text-sm font-black gap-2.5 inline-flex items-center shadow-md active:scale-[0.98]"
               >
                 <History className="w-4 h-4 text-slate-500" />
                 Past Sessions
               </Link>
               <Link
                 href="/interviews/setup"
-                className="liquid-glass-btn-primary px-5 py-2.5 text-xs font-bold gap-2 inline-flex items-center"
+                className="glass-button-primary px-7 py-3 text-xs sm:text-sm font-black gap-2.5 inline-flex items-center shadow-lg shadow-blue-500/20 active:scale-[0.98]"
               >
-                <PlayCircle className="w-4 h-4" />
+                <PlayCircle className="w-4 h-4 text-white" />
                 Start Interview
               </Link>
             </div>
           </div>
 
           {/* Quick Start Mode Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 animate-section-stagger-2">
             {quickModes.map((mode) => {
               const Icon = mode.icon;
               return (
                 <div
                   key={mode.title}
-                  className="glass liquid-glass-panel p-6 flex flex-col justify-between hover:shadow-xl transition-all"
+                  className="glass-primary p-7 sm:p-8 rounded-[30px] flex flex-col justify-between space-y-6 hover:translate-y-[-2px] transition-all duration-300 relative overflow-hidden group border-white/95"
+                  data-config='{"refraction": 0.2, "edgeHighlight": 0.85, "specular": 0.8, "zRadius": 18, "cornerRadius": 30}'
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
-                        <Icon className="w-5 h-5" />
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center glass-capsule border-white/95 shadow-xs text-blue-600">
+                        <Icon className="w-6 h-6" />
                       </div>
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
+                      <span className="glass-capsule px-3 py-1 text-[10px] font-black uppercase tracking-wider text-slate-600 border-white/80">
                         {mode.tag}
                       </span>
                     </div>
 
-                    <h3 className="text-base font-extrabold text-slate-900 pt-1">
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
                       {mode.title}
                     </h3>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
                       {mode.desc}
                     </p>
                   </div>
 
-                  <div className="pt-6">
+                  <div className="pt-2">
                     <Link
                       href={mode.href}
-                      className="w-full liquid-glass-btn-secondary py-2 text-xs font-bold justify-center gap-1.5 flex items-center"
+                      className="w-full glass-button-secondary py-3 text-xs sm:text-sm font-black justify-center gap-2 flex items-center shadow-sm active:scale-[0.98]"
                     >
                       Configure & Start
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-4 h-4" />
                     </Link>
                   </div>
                 </div>
@@ -135,22 +136,22 @@ export default function InterviewsPage() {
           </div>
 
           {/* Recent History Table */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-lg font-bold text-slate-900">
+          <div className="space-y-4 animate-section-stagger-3">
+            <div className="flex items-center justify-between px-2">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 Recent Practice Attempts
               </h2>
               <Link
                 href="/interviews/history"
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                className="text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
               >
-                View all
-                <ArrowRight className="w-3.5 h-3.5" />
+                View all history
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
             {isLoading ? (
-              <div className="p-8 text-center text-slate-500 bg-white/70 rounded-2xl border border-white">
+              <div className="glass-primary p-12 text-center text-slate-500 rounded-[28px] border-white/95">
                 Loading recent attempts...
               </div>
             ) : (

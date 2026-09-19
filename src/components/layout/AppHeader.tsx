@@ -59,7 +59,7 @@ export function AppHeader({ onOpenMobileNav }: AppHeaderProps) {
   }, []);
 
   return (
-    <header className="h-20 px-4 md:px-8 flex items-center justify-between sticky top-0 z-30 transition-all duration-300">
+    <header className="h-20 px-4 md:px-8 flex items-center justify-between sticky top-0 z-30 transition-all duration-300 backdrop-blur-md bg-white/20 border-b border-white/50">
       {/* Mobile Nav Menu Button */}
       {onOpenMobileNav && (
         <button
@@ -74,11 +74,11 @@ export function AppHeader({ onOpenMobileNav }: AppHeaderProps) {
       {/* Left Center: Pill Search Bar */}
       <div className="hidden sm:flex items-center flex-1 max-w-md mr-4">
         <div className="relative w-full">
-          <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Search mock interviews, technical topics..."
-            className="w-full pl-10 pr-4 py-2 rounded-full bg-white/50 border border-white text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white/80 transition-all shadow-inner backdrop-blur-md"
+            className="w-full pl-10 pr-4 py-2.5 rounded-full glass-capsule border-white/95 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all shadow-inner backdrop-blur-md"
           />
         </div>
       </div>
@@ -90,25 +90,25 @@ export function AppHeader({ onOpenMobileNav }: AppHeaderProps) {
           <button
             type="button"
             onClick={() => setNotificationsOpen((prev) => !prev)}
-            className="w-9 h-9 mockup-icon-circle text-slate-600 hover:text-blue-600 transition-colors relative cursor-pointer"
+            className="glass-icon-bubble text-slate-600 hover:text-blue-600 transition-colors relative cursor-pointer pointer-events-auto"
             aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-500" />
+            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-blue-500 shadow-xs" />
           </button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-72 glass liquid-glass-panel p-4 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+            <div className="absolute right-0 mt-3 w-80 glass-primary rounded-[24px] p-5 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-150 border-white/95">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200/60">
                 <span className="text-xs font-black text-slate-900">Notifications</span>
-                <span className="text-[10px] font-bold text-blue-600">Mark all read</span>
+                <span className="text-[10px] font-bold text-blue-600 cursor-pointer hover:underline">Mark all read</span>
               </div>
-              <div className="py-4 text-center space-y-1">
-                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
-                  <Bell className="w-4 h-4" />
+              <div className="py-5 text-center space-y-2">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/15 text-blue-600 flex items-center justify-center mx-auto border border-blue-400/20">
+                  <Bell className="w-5 h-5" />
                 </div>
-                <p className="text-xs font-bold text-slate-800">You are all caught up!</p>
-                <p className="text-[10px] text-slate-500">New interview evaluations and gap insights will appear here.</p>
+                <p className="text-xs font-black text-slate-800">You are all caught up!</p>
+                <p className="text-[11px] text-slate-500 font-medium">New interview evaluations and gap insights will appear here.</p>
               </div>
             </div>
           )}
@@ -118,10 +118,10 @@ export function AppHeader({ onOpenMobileNav }: AppHeaderProps) {
         {role !== "ADMIN" && (
           <Link
             href="/interviews/setup"
-            className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/60 hover:bg-white/90 border border-white shadow-xs backdrop-blur-md transition-all cursor-pointer group"
+            className="hidden sm:flex items-center gap-2.5 px-4 py-2 glass-capsule hover:bg-white border-white/95 shadow-xs backdrop-blur-md transition-all cursor-pointer group"
             title="Click to customize interview target"
           >
-            <span className="text-[10px] group-hover:scale-110 transition-transform">🎯</span>
+            <span className="text-[12px] group-hover:scale-110 transition-transform">🎯</span>
             <div className="text-left">
               <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider block leading-none">
                 Target Role
@@ -139,12 +139,12 @@ export function AppHeader({ onOpenMobileNav }: AppHeaderProps) {
           <button
             type="button"
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="flex items-center gap-2.5 p-1 rounded-full hover:bg-white/60 transition-all focus:outline-none"
+            className="flex items-center gap-2.5 p-1 rounded-full glass-capsule hover:bg-white/90 transition-all focus:outline-none cursor-pointer pointer-events-auto"
             aria-expanded={menuOpen}
             aria-label="User account menu"
           >
             {/* Liquid Glass Avatar */}
-            <div className="w-9 h-9 rounded-full bg-blue-500/15 text-blue-700 font-black flex items-center justify-center text-sm border border-white shadow-sm backdrop-blur-md">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-blue-500 text-white font-black flex items-center justify-center text-xs shadow-sm">
               {initials}
             </div>
 
@@ -161,8 +161,7 @@ export function AppHeader({ onOpenMobileNav }: AppHeaderProps) {
           {/* Liquid Glass Account Dropdown Menu */}
           {menuOpen && (
             <div
-              className="absolute right-0 mt-2 w-64 glass liquid-glass-panel p-3 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-150"
-              data-config='{"refraction": 0.3, "edgeHighlight": 0.95, "specular": 0.85, "zRadius": 20, "cornerRadius": 24}'
+              className="absolute right-0 mt-3 w-72 glass-primary rounded-[24px] p-4 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-150 border-white/95"
             >
               {/* Profile Summary Header */}
               <div className="p-3 border-b border-slate-200/60 flex items-center gap-3">

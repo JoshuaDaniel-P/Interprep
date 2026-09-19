@@ -21,31 +21,31 @@ export function PreparationReadinessCard({
 }: PreparationReadinessCardProps) {
   return (
     <div
-      className="glass liquid-glass-panel p-6 sm:p-8 relative overflow-hidden"
-      data-config='{"refraction": 0.3, "edgeHighlight": 0.95, "specular": 0.85, "fresnel": 0.65, "zRadius": 22, "cornerRadius": 32}'
+      className="glass-primary p-8 sm:p-12 lg:p-14 rounded-[36px] relative overflow-hidden"
+      data-config='{"refraction": 0.28, "edgeHighlight": 0.95, "specular": 0.85, "fresnel": 0.75, "zRadius": 24, "cornerRadius": 36}'
     >
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16 relative z-10">
         
         {/* Left Side Content */}
-        <div className="space-y-3 text-center sm:text-left flex-1">
-          <div className="inline-flex items-center gap-2 mockup-pill-badge">
-            <Target className="w-3.5 h-3.5 text-blue-600" />
-            Target Goal: <span className="font-extrabold">{targetRole}</span>
+        <div className="space-y-4 text-center sm:text-left flex-1">
+          <div className="inline-flex items-center gap-2.5 glass-capsule px-4 py-1.5 text-xs font-black text-slate-800 border-white/95 shadow-xs">
+            <Target className="w-4 h-4 text-blue-600" />
+            <span>Target Goal: <strong className="text-blue-700 font-black">{targetRole}</strong></span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 leading-[1.12]">
             Your Interview Readiness
           </h2>
 
-          <p className="text-xs sm:text-sm text-slate-600 font-semibold max-w-lg leading-relaxed">
-            Calculated in real-time based on profile completeness, technical & behavioral evaluation, and AI mock interview scores.
+          <p className="text-sm sm:text-base text-slate-600 font-medium max-w-xl leading-relaxed">
+            Calculated in real-time based on profile completeness, technical skills, and mock interview performance across all evaluated competencies.
           </p>
         </div>
 
-        {/* Right Side: Dimensional 3D Liquid-Glass Ring & Boost Button */}
-        <div className="flex items-center gap-6 shrink-0">
+        {/* Right Side: Dimensional 3D Liquid-Glass Ring & Start AI Interview CTA Button */}
+        <div className="flex flex-col sm:flex-row items-center gap-8 sm:gap-10 shrink-0">
           {/* Dimensional Liquid-Glass Ring Dial with Illuminated Blue Material */}
-          <div className="relative w-36 h-36 flex items-center justify-center">
+          <div className="relative w-36 sm:w-40 h-36 sm:h-40 flex items-center justify-center">
             {/* Outer Specular Curved Glass Border */}
             <div className="absolute inset-0 rounded-full border-4 border-white/95 shadow-xl bg-gradient-to-br from-white/90 via-blue-50/40 to-white/70 backdrop-blur-md" />
             
@@ -56,7 +56,7 @@ export function PreparationReadinessCard({
                 cy="50"
                 r="40"
                 fill="none"
-                stroke="rgba(224, 231, 255, 0.6)"
+                stroke="rgba(224, 231, 255, 0.55)"
                 strokeWidth="8"
               />
               <circle
@@ -81,26 +81,26 @@ export function PreparationReadinessCard({
 
             {/* Inner Ring Score Display */}
             <div className="relative text-center z-10">
-              <div className="text-3xl font-black tracking-tight text-slate-900">
+              <div className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
                 {readinessPercentage}%
               </div>
-              <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block leading-tight">
-                PREPAREDNESS SCORE
+              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 block leading-tight mt-0.5">
+                PREPAREDNESS
               </span>
-              <span className="text-[8px] font-extrabold uppercase tracking-widest text-slate-400 block leading-tight mt-0.5">
+              <span className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block leading-tight mt-0.5">
                 SCORE
               </span>
             </div>
           </div>
 
-          {/* Launch AI Interview Glass Capsule Button */}
+          {/* Primary CTA Glass Capsule Button */}
           <Link
             href="/interviews/setup"
-            className="glass liquid-glass-btn-primary px-6 py-2.5 text-xs font-black gap-2 inline-flex items-center"
+            className="glass-button-primary px-8 py-3.5 text-sm font-black gap-3 inline-flex items-center shadow-lg shadow-blue-500/25"
             data-config='{"button": true, "zRadius": 14, "cornerRadius": 9999}'
           >
-            Launch AI Interview
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Start AI Interview</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 

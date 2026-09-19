@@ -203,7 +203,7 @@ export function ProfileSetupWizard() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
       {/* Step Indicator Header */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-card flex items-center justify-between overflow-x-auto gap-2">
+      <div className="glass-secondary rounded-2xl p-3 flex items-center justify-between overflow-x-auto gap-2">
         {[
           { num: 1, label: "Personal", icon: User },
           { num: 2, label: "Education", icon: GraduationCap },
@@ -221,18 +221,18 @@ export function ProfileSetupWizard() {
               key={s.num}
               type="button"
               onClick={() => setStep(s.num)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer pointer-events-auto ${
                 isActive
-                  ? "bg-brand-50 text-brand-700 border border-brand-200 shadow-xs"
+                  ? "glass-button-primary !py-2 !px-3.5 shadow-sm text-white"
                   : isDone
-                  ? "text-emerald-700"
-                  : "text-slate-500 hover:bg-slate-50"
+                  ? "glass-capsule text-emerald-700 font-bold"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-white/40"
               }`}
             >
               {isDone ? (
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
               ) : (
-                <Icon className={`w-4 h-4 ${isActive ? "text-brand-600" : "text-slate-400"}`} />
+                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-500"}`} />
               )}
               <span>{s.label}</span>
             </button>
@@ -245,7 +245,9 @@ export function ProfileSetupWizard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <User className="w-5 h-5 text-brand-600" />
+              <div className="glass-icon-bubble w-8 h-8">
+                <User className="w-4 h-4 text-brand-600" />
+              </div>
               Step 1: Personal Profile & Background
             </CardTitle>
           </CardHeader>
@@ -258,7 +260,7 @@ export function ProfileSetupWizard() {
                   placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500"
+                  className="w-full p-3 text-sm glass-input"
                   required
                 />
               </div>
@@ -268,7 +270,7 @@ export function ProfileSetupWizard() {
                 <select
                   value={ageGroup}
                   onChange={(e) => setAgeGroup(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl bg-white"
+                  className="w-full p-3 text-sm glass-input"
                 >
                   <option value="18-21">18 – 21 years</option>
                   <option value="22-25">22 – 25 years</option>
@@ -286,7 +288,7 @@ export function ProfileSetupWizard() {
                   placeholder="e.g. San Francisco, CA"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl"
+                  className="w-full p-3 text-sm glass-input"
                 />
               </div>
 
@@ -295,7 +297,7 @@ export function ProfileSetupWizard() {
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as any)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl bg-white"
+                  className="w-full p-3 text-sm glass-input"
                 >
                   <option value="Student">Student</option>
                   <option value="Graduate">Graduate</option>
@@ -312,7 +314,7 @@ export function ProfileSetupWizard() {
                 placeholder="Briefly state your technical passion, career focus, and strengths..."
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full p-3 text-sm border border-slate-300 rounded-xl"
+                className="w-full p-3 text-sm glass-input"
               />
             </div>
 
@@ -328,7 +330,9 @@ export function ProfileSetupWizard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-brand-600" />
+              <div className="glass-icon-bubble w-8 h-8">
+                <GraduationCap className="w-4 h-4 text-brand-600" />
+              </div>
               Step 2: Education (Structured Dropdowns & College Manual Input)
             </CardTitle>
           </CardHeader>
@@ -339,7 +343,7 @@ export function ProfileSetupWizard() {
                 <select
                   value={highestQualification}
                   onChange={(e) => setHighestQualification(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl bg-white"
+                  className="w-full p-3 text-sm glass-input"
                 >
                   {qualificationOptions.map((q) => (
                     <option key={q} value={q}>{q}</option>
@@ -352,7 +356,7 @@ export function ProfileSetupWizard() {
                 <select
                   value={degree}
                   onChange={(e) => setDegree(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl bg-white"
+                  className="w-full p-3 text-sm glass-input"
                 >
                   {degreeOptions.map((d) => (
                     <option key={d} value={d}>{d}</option>
@@ -365,7 +369,7 @@ export function ProfileSetupWizard() {
                 <select
                   value={branch}
                   onChange={(e) => setBranch(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl bg-white"
+                  className="w-full p-3 text-sm glass-input"
                 >
                   {(specializationOptions[branchCategory] || specializationOptions.Engineering).map((b) => (
                     <option key={b} value={b}>{b}</option>
@@ -384,7 +388,7 @@ export function ProfileSetupWizard() {
                 placeholder="Type your full college or university name..."
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
-                className="w-full p-3 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500"
+                className="w-full p-3 text-sm glass-input"
                 required
               />
             </div>
@@ -397,7 +401,7 @@ export function ProfileSetupWizard() {
                   placeholder="2026"
                   value={graduationYear}
                   onChange={(e) => setGraduationYear(Number(e.target.value))}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl"
+                  className="w-full p-3 text-sm glass-input"
                 />
               </div>
 
@@ -408,7 +412,7 @@ export function ProfileSetupWizard() {
                   placeholder="e.g. 3.8 / 4.0 or 85%"
                   value={cgpa}
                   onChange={(e) => setCgpa(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl"
+                  className="w-full p-3 text-sm glass-input"
                 />
               </div>
             </div>
@@ -421,7 +425,7 @@ export function ProfileSetupWizard() {
                   placeholder="e.g. Data Structures, Web APIs, SQL"
                   value={strongSubjects}
                   onChange={(e) => setStrongSubjects(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl"
+                  className="w-full p-3 text-sm glass-input"
                 />
               </div>
 
@@ -432,7 +436,7 @@ export function ProfileSetupWizard() {
                   placeholder="e.g. Operating Systems, System Design"
                   value={weakSubjects}
                   onChange={(e) => setWeakSubjects(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl"
+                  className="w-full p-3 text-sm glass-input"
                 />
               </div>
             </div>
@@ -450,7 +454,9 @@ export function ProfileSetupWizard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Code className="w-5 h-5 text-brand-600" />
+              <div className="glass-icon-bubble w-8 h-8">
+                <Code className="w-4 h-4 text-brand-600" />
+              </div>
               Step 3: Technical Skills & Training
             </CardTitle>
           </CardHeader>
@@ -470,10 +476,10 @@ export function ProfileSetupWizard() {
                         key={skillName}
                         type="button"
                         onClick={() => handleToggleSkill(skillName)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer pointer-events-auto ${
                           isSelected
-                            ? "bg-brand-600 text-white border-brand-600 shadow-xs"
-                            : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                            ? "glass-button-primary !py-1.5 !px-3.5 shadow-sm text-white"
+                            : "glass-capsule text-slate-700 hover:text-blue-600 hover:border-blue-200"
                         }`}
                       >
                         {isSelected ? `✓ ${skillName}` : `+ ${skillName}`}
@@ -484,7 +490,7 @@ export function ProfileSetupWizard() {
               </div>
             ))}
 
-            <div className="flex justify-between pt-4 border-t border-slate-100">
+            <div className="flex justify-between pt-4 border-t border-slate-100/60">
               <Button type="button" variant="outline" onClick={() => setStep(2)}>← Back</Button>
               <Button type="button" onClick={() => setStep(4)}>Next: Featured Projects →</Button>
             </div>
@@ -497,17 +503,19 @@ export function ProfileSetupWizard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Rocket className="w-5 h-5 text-brand-600" />
+              <div className="glass-icon-bubble w-8 h-8">
+                <Rocket className="w-4 h-4 text-brand-600" />
+              </div>
               Step 4: Featured Projects (Feeds AI Interview Questions)
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            <div className="p-3 rounded-xl bg-brand-50 border border-brand-200 text-xs text-brand-950 font-medium leading-relaxed">
+            <div className="glass-secondary rounded-2xl p-4 text-xs text-brand-950 font-medium leading-relaxed">
               💡 <strong>How PrepPilot Uses This</strong>: Your AI interviewer will inspect these specific project details (e.g. <em>&ldquo;Why did you choose Redis over PostgreSQL for your API project?&rdquo;</em>).
             </div>
 
             {projects.map((p, idx) => (
-              <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+              <div key={idx} className="glass-secondary rounded-2xl p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                     Project #{idx + 1}
@@ -516,7 +524,7 @@ export function ProfileSetupWizard() {
                     <button
                       type="button"
                       onClick={() => setProjects(projects.filter((_, i) => i !== idx))}
-                      className="text-xs text-rose-600 hover:underline flex items-center gap-1"
+                      className="text-xs text-rose-600 hover:underline flex items-center gap-1 font-semibold cursor-pointer pointer-events-auto"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Remove
                     </button>
@@ -535,7 +543,7 @@ export function ProfileSetupWizard() {
                         updated[idx].name = e.target.value;
                         setProjects(updated);
                       }}
-                      className="w-full p-2.5 text-xs border border-slate-300 rounded-lg bg-white"
+                      className="w-full p-2.5 text-xs glass-input"
                     />
                   </div>
 
@@ -550,7 +558,7 @@ export function ProfileSetupWizard() {
                         updated[idx].technologies = e.target.value;
                         setProjects(updated);
                       }}
-                      className="w-full p-2.5 text-xs border border-slate-300 rounded-lg bg-white"
+                      className="w-full p-2.5 text-xs glass-input"
                     />
                   </div>
                 </div>
@@ -566,7 +574,7 @@ export function ProfileSetupWizard() {
                       updated[idx].contribution = e.target.value;
                       setProjects(updated);
                     }}
-                    className="w-full p-2.5 text-xs border border-slate-300 rounded-lg bg-white"
+                    className="w-full p-2.5 text-xs glass-input"
                   />
                 </div>
 
@@ -581,7 +589,7 @@ export function ProfileSetupWizard() {
                       updated[idx].challenges = e.target.value;
                       setProjects(updated);
                     }}
-                    className="w-full p-2.5 text-xs border border-slate-300 rounded-lg bg-white"
+                    className="w-full p-2.5 text-xs glass-input"
                   />
                 </div>
               </div>
@@ -591,7 +599,7 @@ export function ProfileSetupWizard() {
               <Plus className="w-4 h-4" /> Add Another Project
             </Button>
 
-            <div className="flex justify-between pt-4 border-t border-slate-100">
+            <div className="flex justify-between pt-4 border-t border-slate-100/60">
               <Button type="button" variant="outline" onClick={() => setStep(3)}>← Back</Button>
               <Button type="button" onClick={() => setStep(5)}>Next: Experience →</Button>
             </div>
@@ -604,7 +612,9 @@ export function ProfileSetupWizard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-brand-600" />
+              <div className="glass-icon-bubble w-8 h-8">
+                <Briefcase className="w-4 h-4 text-brand-600" />
+              </div>
               Step 5: Experience & Achievements
             </CardTitle>
           </CardHeader>
@@ -617,7 +627,7 @@ export function ProfileSetupWizard() {
                   placeholder="e.g. Acme Tech Solutions"
                   value={experienceOrg}
                   onChange={(e) => setExperienceOrg(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl"
+                  className="w-full p-3 text-sm glass-input"
                 />
               </div>
 
@@ -628,7 +638,7 @@ export function ProfileSetupWizard() {
                   placeholder="e.g. Software Engineering Intern"
                   value={experienceRole}
                   onChange={(e) => setExperienceRole(e.target.value)}
-                  className="w-full p-3 text-sm border border-slate-300 rounded-xl"
+                  className="w-full p-3 text-sm glass-input"
                 />
               </div>
             </div>
@@ -640,7 +650,7 @@ export function ProfileSetupWizard() {
                 placeholder="List hackathons, awards, scholarships, or leadership roles (one per line)..."
                 value={achievements}
                 onChange={(e) => setAchievements(e.target.value)}
-                className="w-full p-3 text-sm border border-slate-300 rounded-xl"
+                className="w-full p-3 text-sm glass-input"
               />
             </div>
 
@@ -657,7 +667,9 @@ export function ProfileSetupWizard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Target className="w-5 h-5 text-brand-600" />
+              <div className="glass-icon-bubble w-8 h-8">
+                <Target className="w-4 h-4 text-brand-600" />
+              </div>
               Step 6: Target Goal & Preparation Track
             </CardTitle>
           </CardHeader>
@@ -676,7 +688,7 @@ export function ProfileSetupWizard() {
               columns={2}
             />
 
-            <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+            <div className="flex justify-between items-center pt-4 border-t border-slate-100/60">
               <Button type="button" variant="outline" onClick={() => setStep(5)}>← Back</Button>
               <Button type="submit" size="lg" isLoading={isSaving} className="px-8 gap-2">
                 Save Candidate Profile & Launch Dashboard →

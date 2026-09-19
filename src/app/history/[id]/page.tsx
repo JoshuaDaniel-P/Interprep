@@ -109,14 +109,14 @@ export default function HistoryDetailPage() {
         </div>
 
         {/* Complete Session Metadata Header */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="glass-primary p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200">
+              <span className="glass-capsule px-3 py-1 text-xs font-black text-blue-800">
                 {session.role}
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
-                <Building2 className="w-3 h-3 text-gray-500" />
+              <span className="glass-capsule inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-slate-700">
+                <Building2 className="w-3.5 h-3.5 text-slate-500" />
                 {session.company || session.companyType} ({session.companyType})
               </span>
               <Badge variant="neutral" size="sm">
@@ -124,21 +124,21 @@ export default function HistoryDetailPage() {
               </Badge>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
               Mock Interview Transcript
             </h1>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 font-medium">
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                <Calendar className="w-3.5 h-3.5 text-slate-400" />
                 <span>Date: {formatDate(session.startedAt || session.completedAt)}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-gray-400" />
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
                 <span>Duration: {formatDuration(session.duration || 600)}</span>
               </div>
               <div>
-                <span className="font-semibold text-gray-700">
+                <span className="font-bold text-slate-800">
                   {session.questionCount || session.questions.length} Questions Answered
                 </span>
               </div>
@@ -146,13 +146,13 @@ export default function HistoryDetailPage() {
           </div>
 
           {/* Overall Score Dial */}
-          <div className="text-center sm:text-right bg-brand-50/70 border border-brand-200 rounded-2xl p-6 min-w-[170px] shrink-0">
-            <span className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
+          <div className="text-center sm:text-right glass-secondary p-5 min-w-[170px] rounded-3xl border border-white/95 shadow-md shrink-0">
+            <span className="text-[10px] font-black text-blue-900 uppercase tracking-wider block">
               Overall Rating
             </span>
-            <div className="text-4xl font-black text-brand-950 mt-1">
+            <div className="text-4xl font-black text-blue-950 mt-1">
               {session.overallScore?.toFixed(1) ?? "7.5"}
-              <span className="text-lg text-brand-600 font-semibold"> / 10</span>
+              <span className="text-lg text-blue-600 font-bold"> / 10</span>
             </div>
           </div>
         </div>
@@ -160,8 +160,8 @@ export default function HistoryDetailPage() {
         {/* 7 Category Scores Grid */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <Award className="w-4 h-4 text-brand-600" />
+            <CardTitle className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <Award className="w-4 h-4 text-blue-600" />
               Category Breakdown
             </CardTitle>
           </CardHeader>
@@ -169,15 +169,15 @@ export default function HistoryDetailPage() {
             {categoryCards.map((cat) => (
               <div
                 key={cat.label}
-                className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center space-y-1"
+                className="p-3 rounded-2xl bg-white/70 border border-white/95 text-center space-y-1 shadow-xs backdrop-blur-sm"
               >
-                <span className="text-[11px] font-semibold text-slate-600 block truncate">
+                <span className="text-[11px] font-bold text-slate-600 block truncate">
                   {cat.label}
                 </span>
-                <span className="text-sm font-black text-brand-800 block">
+                <span className="text-sm font-black text-blue-900 block">
                   {cat.val}%
                 </span>
-                <ProgressBar value={cat.val} barClassName={cat.val >= 75 ? "bg-emerald-500" : "bg-brand-600"} />
+                <ProgressBar value={cat.val} barClassName={cat.val >= 75 ? "glass-fluid-green" : "glass-fluid-blue"} />
               </div>
             ))}
           </CardContent>
@@ -185,56 +185,50 @@ export default function HistoryDetailPage() {
 
         {/* Strengths & Weaknesses & Recommendations */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="border-emerald-200 bg-emerald-50/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-bold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                Strengths
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-2 text-xs text-emerald-900">
+          <div className="liquid-glass-green-panel p-5 space-y-2">
+            <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              Strengths
+            </h4>
+            <div className="space-y-2 text-xs text-emerald-950 font-semibold pt-1">
               {session.strengths?.map((s, idx) => (
                 <div key={idx} className="flex items-start gap-2">
                   <span className="text-emerald-500 font-bold">•</span>
                   <span>{s}</span>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="border-amber-200 bg-amber-50/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4 text-amber-600" />
-                Areas to Improve
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-2 text-xs text-amber-900">
+          <div className="liquid-glass-amber-panel p-5 space-y-2">
+            <h4 className="text-xs font-extrabold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4 text-amber-600" />
+              Areas to Improve
+            </h4>
+            <div className="space-y-2 text-xs text-amber-950 font-semibold pt-1">
               {session.weaknesses?.map((w, idx) => (
                 <div key={idx} className="flex items-start gap-2">
                   <span className="text-amber-500 font-bold">•</span>
                   <span>{w}</span>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="border-brand-200 bg-brand-50/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-bold text-brand-950 uppercase tracking-wider flex items-center gap-1.5">
-                <Lightbulb className="w-4 h-4 text-brand-600" />
-                Preparation Focus
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-2 text-xs text-brand-950">
+          <div className="glass-secondary p-5 space-y-2">
+            <h4 className="text-xs font-extrabold text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
+              <Lightbulb className="w-4 h-4 text-blue-600" />
+              Preparation Focus
+            </h4>
+            <div className="space-y-2 text-xs text-slate-900 font-semibold pt-1">
               {(session.recommendedPreparationAreas || []).map((r, idx) => (
                 <div key={idx} className="flex items-start gap-2">
-                  <span className="text-brand-600 font-bold">✓</span>
+                  <span className="text-blue-600 font-bold">✓</span>
                   <span>{r}</span>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Complete Conversation & Answer Evaluations */}
@@ -250,18 +244,18 @@ export default function HistoryDetailPage() {
 
           <div className="space-y-6">
             {session.questions.map((q: RecordedQuestion, idx: number) => (
-              <Card key={q.id || idx} className="border-gray-200 shadow-2xs overflow-hidden">
+              <Card key={q.id || idx} className="overflow-hidden">
                 {/* Question Header */}
-                <div className="p-5 bg-gray-50/80 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="p-5 border-b border-slate-200/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/40">
                   <div className="flex items-center gap-2.5">
-                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-white text-gray-900 border border-gray-200">
+                    <span className="glass-capsule px-3 py-0.5 text-xs font-black text-slate-800">
                       Question {idx + 1}
                     </span>
-                    <span className="text-xs font-semibold text-brand-700 uppercase tracking-wider">
+                    <span className="text-xs font-black text-blue-700 uppercase tracking-wider">
                       {q.questionType}
                     </span>
                     {q.isFollowUp && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100/90 text-amber-900 border border-amber-300/80 shadow-xs">
                         <CornerDownRight className="w-3 h-3" />
                         Adaptive Follow-up
                       </span>
@@ -270,12 +264,12 @@ export default function HistoryDetailPage() {
 
                   <div className="flex items-center gap-3">
                     {q.answerDuration ? (
-                      <span className="text-xs text-gray-500 flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-gray-400" />
+                      <span className="text-xs text-slate-500 font-bold flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
                         {q.answerDuration}s
                       </span>
                     ) : null}
-                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-brand-50 text-brand-900 border border-brand-200">
+                    <span className="glass-capsule px-3 py-0.5 text-xs font-black text-blue-900">
                       Score: {q.evaluation?.score ?? 7.0} / 10
                     </span>
                   </div>
@@ -284,64 +278,64 @@ export default function HistoryDetailPage() {
                 <div className="p-6 space-y-4">
                   {/* Interviewer Prompt */}
                   <div className="space-y-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-brand-700">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-blue-700">
                       Interviewer:
                     </span>
-                    <p className="text-base font-semibold text-gray-900 leading-snug">
+                    <p className="text-base font-extrabold text-slate-900 leading-snug tracking-tight">
                       &ldquo;{q.question}&rdquo;
                     </p>
                   </div>
 
                   {/* Candidate Answer */}
                   <div className="space-y-1.5 pt-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-600">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
                       Candidate Answer:
                     </span>
-                    <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200 text-sm text-gray-800 leading-relaxed font-sans whitespace-pre-wrap">
+                    <div className="p-4 rounded-2xl bg-white/80 border border-white/95 text-sm text-slate-800 leading-relaxed font-medium shadow-xs whitespace-pre-wrap">
                       {q.candidateAnswer}
                     </div>
                   </div>
 
                   {/* Per-Question Evaluation Breakdown */}
                   {q.evaluation && (
-                    <div className="pt-3 border-t border-gray-100 space-y-3">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                    <div className="pt-3 border-t border-slate-200/40 space-y-3">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
                         Answer Evaluation Metrics:
                       </span>
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
-                        <div className="p-2 rounded-lg bg-gray-50 border border-gray-200">
-                          <span className="text-[10px] text-gray-500 block">Correctness</span>
-                          <span className="font-bold text-gray-900">{q.evaluation.technicalCorrectness}/10</span>
+                        <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                          <span className="text-[10px] text-slate-500 block font-extrabold uppercase">Correctness</span>
+                          <span className="font-black text-slate-900">{q.evaluation.technicalCorrectness}/10</span>
                         </div>
-                        <div className="p-2 rounded-lg bg-gray-50 border border-gray-200">
-                          <span className="text-[10px] text-gray-500 block">Relevance</span>
-                          <span className="font-bold text-gray-900">{q.evaluation.relevance}/10</span>
+                        <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                          <span className="text-[10px] text-slate-500 block font-extrabold uppercase">Relevance</span>
+                          <span className="font-black text-slate-900">{q.evaluation.relevance}/10</span>
                         </div>
-                        <div className="p-2 rounded-lg bg-gray-50 border border-gray-200">
-                          <span className="text-[10px] text-gray-500 block">Clarity</span>
-                          <span className="font-bold text-gray-900">{q.evaluation.clarity}/10</span>
+                        <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                          <span className="text-[10px] text-slate-500 block font-extrabold uppercase">Clarity</span>
+                          <span className="font-black text-slate-900">{q.evaluation.clarity}/10</span>
                         </div>
-                        <div className="p-2 rounded-lg bg-gray-50 border border-gray-200">
-                          <span className="text-[10px] text-gray-500 block">Structure</span>
-                          <span className="font-bold text-gray-900">{q.evaluation.structure}/10</span>
+                        <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                          <span className="text-[10px] text-slate-500 block font-extrabold uppercase">Structure</span>
+                          <span className="font-black text-slate-900">{q.evaluation.structure}/10</span>
                         </div>
-                        <div className="p-2 rounded-lg bg-gray-50 border border-gray-200">
-                          <span className="text-[10px] text-gray-500 block">Conciseness</span>
-                          <span className="font-bold text-gray-900">{q.evaluation.conciseness}/10</span>
+                        <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                          <span className="text-[10px] text-slate-500 block font-extrabold uppercase">Conciseness</span>
+                          <span className="font-black text-slate-900">{q.evaluation.conciseness}/10</span>
                         </div>
                       </div>
 
                       {q.evaluation.confidenceIndicators && (
-                        <p className="text-xs text-gray-500 italic">
+                        <p className="text-xs text-slate-500 italic font-medium">
                           Confidence indicator: {q.evaluation.confidenceIndicators}
                         </p>
                       )}
 
                       {q.evaluation.strengths?.length ? (
-                        <div className="text-xs text-emerald-900 space-y-1">
-                          <span className="font-bold">What was strong:</span>
+                        <div className="text-xs text-emerald-950 space-y-1 font-semibold">
+                          <span className="font-extrabold text-emerald-900">What was strong:</span>
                           {q.evaluation.strengths.map((s, i) => (
-                            <p key={i} className="pl-2 border-l-2 border-emerald-400">
+                            <p key={i} className="pl-2 border-l-2 border-emerald-500">
                               {s}
                             </p>
                           ))}
@@ -349,10 +343,10 @@ export default function HistoryDetailPage() {
                       ) : null}
 
                       {q.evaluation.weaknesses?.length ? (
-                        <div className="text-xs text-amber-900 space-y-1">
-                          <span className="font-bold">Room for improvement:</span>
+                        <div className="text-xs text-amber-950 space-y-1 font-semibold">
+                          <span className="font-extrabold text-amber-900">Room for improvement:</span>
                           {q.evaluation.weaknesses.map((w, i) => (
-                            <p key={i} className="pl-2 border-l-2 border-amber-400">
+                            <p key={i} className="pl-2 border-l-2 border-amber-500">
                               {w}
                             </p>
                           ))}
@@ -367,15 +361,15 @@ export default function HistoryDetailPage() {
         </div>
 
         {/* Footer Actions */}
-        <div className="pt-6 border-t border-gray-200 flex items-center justify-between">
-          <Link href="/history">
+        <div className="pt-6 border-t border-slate-200/50 flex items-center justify-between">
+          <Link href="/interviews/history">
             <Button variant="outline" className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               All Interviews
             </Button>
           </Link>
-          <Link href="/setup">
-            <Button className="gap-2">
+          <Link href="/interviews/setup">
+            <Button className="gap-2 px-6">
               Start New Mock Interview
             </Button>
           </Link>

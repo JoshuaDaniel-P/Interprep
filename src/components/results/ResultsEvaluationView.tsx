@@ -245,16 +245,16 @@ function ResultsContent() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
       {/* Overview Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-card flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3">
-            <Award className="w-3.5 h-3.5" />
+      <div className="glass-primary p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="space-y-2">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold bg-emerald-500/15 text-emerald-800 border border-emerald-400/40 mb-1 shadow-xs backdrop-blur-sm">
+            <Award className="w-3.5 h-3.5 text-emerald-600" />
             Interview Complete & Evaluated
           </span>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             Performance Review & Gap Analysis
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-600 font-medium">
             <span>
               {roleText} • {companyText} ({difficultyText}) • {completedCount} Questions Completed
             </span>
@@ -262,15 +262,15 @@ function ResultsContent() {
         </div>
 
         {/* Overall Score Dial */}
-        <div className="text-center sm:text-right bg-brand-50/70 border border-brand-200 rounded-2xl p-6 min-w-[180px] shadow-xs">
-          <span className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
+        <div className="text-center sm:text-right glass-secondary p-6 min-w-[180px] rounded-3xl border border-white/95 shadow-md">
+          <span className="text-[10px] font-black text-blue-900 uppercase tracking-wider block">
             Overall Score
           </span>
-          <div className="text-4xl font-black text-brand-950 mt-1">
+          <div className="text-4xl font-black text-blue-950 mt-1">
             {evaluation.overallScore.toFixed(1)}
-            <span className="text-lg text-brand-600 font-semibold"> / 10</span>
+            <span className="text-lg text-blue-600 font-bold"> / 10</span>
           </div>
-          <span className="text-[11px] text-brand-800 block mt-1">
+          <span className="text-[11px] text-slate-500 font-bold block mt-1">
             {questionsList.length > 0 ? `${questionsList.length} Questions Evaluated` : "Complete Mock Session"}
           </span>
         </div>
@@ -279,7 +279,7 @@ function ResultsContent() {
       {/* 7 Category Scores Grid */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-bold text-slate-900">
+          <CardTitle className="text-base font-extrabold text-slate-900">
             Assessment Across 7 Core Categories
           </CardTitle>
         </CardHeader>
@@ -289,24 +289,24 @@ function ResultsContent() {
             return (
               <div
                 key={cat.label}
-                className="space-y-2 p-4 rounded-xl bg-slate-50/80 border border-slate-100 flex flex-col justify-between"
+                className="space-y-2.5 p-4 rounded-2xl bg-white/70 border border-white/95 shadow-xs flex flex-col justify-between backdrop-blur-sm"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-brand-50 text-brand-700">
+                      <div className="p-1.5 rounded-xl bg-blue-50/90 text-blue-700 border border-blue-200/80 shadow-xs">
                         <Icon className="w-4 h-4" />
                       </div>
-                      <span className="font-bold text-xs text-slate-900">{cat.label}</span>
+                      <span className="font-extrabold text-xs text-slate-900">{cat.label}</span>
                     </div>
-                    <span className="font-bold text-xs text-brand-700">{cat.score}%</span>
+                    <span className="font-black text-xs text-blue-700">{cat.score}%</span>
                   </div>
                   <ProgressBar
                     value={cat.score}
-                    barClassName={cat.score >= 75 ? "bg-emerald-500" : "bg-brand-600"}
+                    barClassName={cat.score >= 75 ? "glass-fluid-green" : "glass-fluid-blue"}
                   />
                 </div>
-                <p className="text-[11px] text-slate-500 pt-2 leading-relaxed">
+                <p className="text-[11px] text-slate-500 pt-2 leading-relaxed font-medium">
                   {cat.desc}
                 </p>
               </div>
@@ -319,7 +319,7 @@ function ResultsContent() {
       {skills.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">
+            <CardTitle className="text-base font-extrabold text-slate-900">
               STAR & Core Competencies Breakdown
             </CardTitle>
           </CardHeader>
@@ -327,14 +327,14 @@ function ResultsContent() {
             {skills.map((skill) => (
               <div
                 key={skill.label}
-                className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-2"
+                className="p-4 rounded-2xl bg-white/70 border border-white/95 shadow-xs space-y-2 backdrop-blur-sm"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800">{skill.label}</span>
-                  <span className="text-xs font-bold text-brand-700">{skill.score} / 10</span>
+                  <span className="text-xs font-extrabold text-slate-800">{skill.label}</span>
+                  <span className="text-xs font-black text-blue-700">{skill.score} / 10</span>
                 </div>
-                <ProgressBar value={skill.score * 10} barClassName="bg-brand-600" />
-                <p className="text-[11px] text-slate-600 pt-1 leading-relaxed">{skill.feedback}</p>
+                <ProgressBar value={skill.score * 10} barClassName="glass-fluid-blue" />
+                <p className="text-[11px] text-slate-600 pt-1 leading-relaxed font-medium">{skill.feedback}</p>
               </div>
             ))}
           </CardContent>
@@ -343,10 +343,10 @@ function ResultsContent() {
 
       {/* Recommended Preparation Areas */}
       {recommendations.length > 0 && (
-        <Card className="border-brand-300 bg-brand-50/40">
+        <Card className="border-blue-200/80">
           <CardHeader>
-            <CardTitle className="text-sm font-bold text-brand-950 flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-brand-600" />
+            <CardTitle className="text-sm font-extrabold text-blue-950 flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-blue-600" />
               Recommended Preparation Areas (What to Focus On)
             </CardTitle>
           </CardHeader>
@@ -354,7 +354,7 @@ function ResultsContent() {
             {recommendations.map((rec, idx) => (
               <div
                 key={idx}
-                className="p-3.5 rounded-xl bg-white border border-brand-200 text-xs sm:text-sm text-brand-950 font-medium leading-relaxed flex items-start gap-2.5"
+                className="p-3.5 rounded-2xl bg-white/80 border border-white/95 text-xs sm:text-sm text-slate-900 font-semibold leading-relaxed flex items-start gap-2.5 shadow-xs"
               >
                 <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>{rec}</span>
@@ -367,40 +367,36 @@ function ResultsContent() {
       {/* Strengths & Areas to Improve */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Observed Strengths */}
-        <Card className="border-emerald-200/80 bg-emerald-50/30">
-          <CardHeader>
-            <CardTitle className="text-sm font-bold text-emerald-950 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-              Observed Strengths
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 pt-0 space-y-3">
+        <div className="liquid-glass-green-panel p-6 space-y-3">
+          <h3 className="text-sm font-extrabold text-emerald-950 flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            Observed Strengths
+          </h3>
+          <div className="space-y-3 pt-1">
             {evaluation.strengths.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-emerald-900">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-2" />
+              <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-emerald-950 font-semibold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5 shadow-xs" />
                 <span>{item}</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Areas to Improve */}
-        <Card className="border-amber-200/80 bg-amber-50/30">
-          <CardHeader>
-            <CardTitle className="text-sm font-bold text-amber-950 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-600" />
-              Areas to Improve
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 pt-0 space-y-3">
+        <div className="liquid-glass-amber-panel p-6 space-y-3">
+          <h3 className="text-sm font-extrabold text-amber-950 flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-amber-600" />
+            Areas to Improve
+          </h3>
+          <div className="space-y-3 pt-1">
             {evaluation.improvements.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-amber-900">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-2" />
+              <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-amber-950 font-semibold">
+                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 mt-1.5 shadow-xs" />
                 <span>{item}</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Pattern Insights: Recurring Issues & Identified Gaps */}
@@ -462,86 +458,86 @@ function ResultsContent() {
               return (
                 <div
                   key={q.id || idx}
-                  className="rounded-xl border border-slate-200 bg-white overflow-hidden transition-all shadow-2xs"
+                  className="rounded-2xl border border-white/95 bg-white/75 backdrop-blur-sm overflow-hidden transition-all shadow-xs"
                 >
                   <button
                     type="button"
                     onClick={() => setExpandedQuestion(isExpanded ? null : idx)}
-                    className="w-full p-4 text-left flex items-start justify-between gap-4 hover:bg-slate-50/80 transition-colors"
+                    className="w-full p-4.5 text-left flex items-start justify-between gap-4 hover:bg-blue-50/30 transition-colors cursor-pointer"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700">
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-white/90 text-slate-800 border border-white/95 shadow-xs">
                           Q{idx + 1}
                         </span>
-                        <span className="text-xs font-semibold text-brand-700 uppercase tracking-wider">
+                        <span className="text-xs font-black text-blue-700 uppercase tracking-wider">
                           {q.questionType}
                         </span>
                         {q.isFollowUp && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100/80 text-amber-900 border border-amber-300/80 shadow-xs">
                             Follow-up
                           </span>
                         )}
                       </div>
-                      <p className="text-sm font-semibold text-slate-900 pt-0.5">
+                      <p className="text-sm font-extrabold text-slate-900 pt-0.5 tracking-tight">
                         {q.question}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-bold text-xs bg-brand-50 text-brand-800 px-2.5 py-1 rounded-md border border-brand-200">
+                      <span className="font-black text-xs bg-blue-50/90 text-blue-900 px-3 py-1 rounded-full border border-blue-200/80 shadow-xs">
                         {q.evaluation?.score ?? evaluation.overallScore ?? 5.0} / 10
                       </span>
                       {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-slate-400" />
+                        <ChevronUp className="w-4 h-4 text-slate-500" />
                       ) : (
-                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                        <ChevronDown className="w-4 h-4 text-slate-500" />
                       )}
                     </div>
                   </button>
 
                   {isExpanded && (
-                    <div className="p-5 border-t border-slate-100 bg-slate-50/50 space-y-4 text-xs sm:text-sm">
+                    <div className="p-5 border-t border-slate-200/40 bg-white/40 space-y-4 text-xs sm:text-sm">
                       <div>
-                        <span className="font-bold text-slate-700 block mb-1">
+                        <span className="font-extrabold text-slate-800 block mb-1">
                           Candidate Answer:
                         </span>
-                        <div className="p-3.5 rounded-lg bg-white border border-slate-200 text-slate-800 leading-relaxed">
+                        <div className="p-4 rounded-xl bg-white/90 border border-white/95 text-slate-800 leading-relaxed font-medium shadow-2xs">
                           {q.candidateAnswer || "No answer provided"}
                         </div>
                       </div>
 
                       {q.evaluation && (
-                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 text-center font-semibold">
-                          <div className="p-2 rounded bg-white border border-slate-200">
-                            <span className="text-[10px] text-slate-500 block uppercase">Correctness</span>
-                            <span className="text-slate-900 text-xs">{q.evaluation.technicalCorrectness}/10</span>
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 text-center font-bold">
+                          <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                            <span className="text-[10px] text-slate-500 block uppercase font-extrabold">Correctness</span>
+                            <span className="text-slate-900 text-xs font-black">{q.evaluation.technicalCorrectness}/10</span>
                           </div>
-                          <div className="p-2 rounded bg-white border border-slate-200">
-                            <span className="text-[10px] text-slate-500 block uppercase">Relevance</span>
-                            <span className="text-slate-900 text-xs">{q.evaluation.relevance}/10</span>
+                          <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                            <span className="text-[10px] text-slate-500 block uppercase font-extrabold">Relevance</span>
+                            <span className="text-slate-900 text-xs font-black">{q.evaluation.relevance}/10</span>
                           </div>
-                          <div className="p-2 rounded bg-white border border-slate-200">
-                            <span className="text-[10px] text-slate-500 block uppercase">Clarity</span>
-                            <span className="text-slate-900 text-xs">{q.evaluation.clarity}/10</span>
+                          <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                            <span className="text-[10px] text-slate-500 block uppercase font-extrabold">Clarity</span>
+                            <span className="text-slate-900 text-xs font-black">{q.evaluation.clarity}/10</span>
                           </div>
-                          <div className="p-2 rounded bg-white border border-slate-200">
-                            <span className="text-[10px] text-slate-500 block uppercase">Structure</span>
-                            <span className="text-slate-900 text-xs">{q.evaluation.structure}/10</span>
+                          <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                            <span className="text-[10px] text-slate-500 block uppercase font-extrabold">Structure</span>
+                            <span className="text-slate-900 text-xs font-black">{q.evaluation.structure}/10</span>
                           </div>
-                          <div className="p-2 rounded bg-white border border-slate-200">
-                            <span className="text-[10px] text-slate-500 block uppercase">Conciseness</span>
-                            <span className="text-slate-900 text-xs">{q.evaluation.conciseness}/10</span>
+                          <div className="p-2.5 rounded-xl bg-white/80 border border-white/95 shadow-xs">
+                            <span className="text-[10px] text-slate-500 block uppercase font-extrabold">Conciseness</span>
+                            <span className="text-slate-900 text-xs font-black">{q.evaluation.conciseness}/10</span>
                           </div>
                         </div>
                       )}
 
                       {q.evaluation?.strengths?.length ? (
-                        <div className="text-emerald-900 text-xs space-y-1">
-                          <span className="font-bold block">Question Strengths:</span>
+                        <div className="text-emerald-950 text-xs space-y-1 font-semibold">
+                          <span className="font-extrabold block text-emerald-900">Question Strengths:</span>
                           {q.evaluation.strengths.map((s, i) => (
                             <div key={i} className="flex items-center gap-1.5">
-                              <span className="text-emerald-500">•</span>
+                              <span className="text-emerald-500 font-bold">•</span>
                               <span>{s}</span>
                             </div>
                           ))}
@@ -549,11 +545,11 @@ function ResultsContent() {
                       ) : null}
 
                       {q.evaluation?.weaknesses?.length ? (
-                        <div className="text-amber-900 text-xs space-y-1">
-                          <span className="font-bold block">Areas to Improve:</span>
+                        <div className="text-amber-950 text-xs space-y-1 font-semibold">
+                          <span className="font-extrabold block text-amber-900">Areas to Improve:</span>
                           {q.evaluation.weaknesses.map((w, i) => (
                             <div key={i} className="flex items-center gap-1.5">
-                              <span className="text-amber-500">•</span>
+                              <span className="text-amber-500 font-bold">•</span>
                               <span>{w}</span>
                             </div>
                           ))}
@@ -569,7 +565,7 @@ function ResultsContent() {
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200/50">
         <Link href={`/history/${sessionId}`} className="w-full sm:w-auto">
           <Button variant="outline" className="w-full gap-2">
             <FileText className="w-4 h-4" />

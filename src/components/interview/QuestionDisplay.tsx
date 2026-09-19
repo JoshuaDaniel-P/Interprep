@@ -70,70 +70,67 @@ export function QuestionDisplay({ question, autoSpeak = false }: QuestionDisplay
   }, [question.id]);
 
   return (
-    <div
-      className="glass liquid-glass-panel p-6 sm:p-8 space-y-4"
-      data-config='{"refraction": 0.25, "edgeHighlight": 0.9, "specular": 0.8, "zRadius": 20, "cornerRadius": 28}'
-    >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center shadow-xs">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-gray-900 uppercase tracking-wider block">
-                AI Adaptive Interviewer
-              </span>
-              <span className="text-[11px] text-gray-500">
-                Evaluating real-time depth, trade-offs & clarity
-              </span>
-            </div>
+    <div className="glass-primary p-6 sm:p-8 space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/40 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="glass-icon-bubble text-blue-600">
+            <Sparkles className="w-5 h-5" />
           </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={speakQuestion}
-              className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                isSpeaking
-                  ? "bg-amber-50 text-amber-700 border-amber-300 animate-pulse"
-                  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-              }`}
-              title={isSpeaking ? "Stop AI Voice" : "Listen to Question (AI Voice)"}
-            >
-              {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-              <span>{isSpeaking ? "Stop Voice" : "Read Aloud"}</span>
-            </button>
-
-            {question.isFollowUp ? (
-              <Badge variant="warning" size="sm" className="gap-1 font-semibold">
-                <CornerDownRight className="w-3 h-3" />
-                Adaptive Follow-up
-              </Badge>
-            ) : (
-              <Badge variant="brand" size="sm" className="gap-1 font-semibold">
-                <Tag className="w-3 h-3" />
-                {question.category || getQuestionTypeLabel(question.questionType)}
-              </Badge>
-            )}
-
-            {question.questionType === "yes_no" && (
-              <Badge variant="neutral" size="sm" className="bg-purple-50 text-purple-700 border-purple-200">
-                Yes/No
-              </Badge>
-            )}
+          <div>
+            <span className="text-xs font-black text-slate-900 uppercase tracking-wider block">
+              AI Adaptive Interviewer
+            </span>
+            <span className="text-[11px] text-slate-500 font-medium">
+              Evaluating real-time depth, trade-offs & clarity
+            </span>
           </div>
         </div>
 
-        <div className="pt-2">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-snug">
-            &ldquo;{question.text}&rdquo;
-          </h2>
-          {question.followUpQuestionRelationship && (
-            <p className="text-xs text-brand-700 mt-2 font-medium">
-              ↳ {question.followUpQuestionRelationship}
-            </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={speakQuestion}
+            className={`glass-capsule px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              isSpeaking
+                ? "bg-amber-100/90 text-amber-900 border-amber-300 animate-pulse"
+                : "text-slate-700 hover:text-blue-700"
+            }`}
+            title={isSpeaking ? "Stop AI Voice" : "Listen to Question (AI Voice)"}
+          >
+            {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-blue-600" />}
+            <span>{isSpeaking ? "Stop Voice" : "Read Aloud"}</span>
+          </button>
+
+          {question.isFollowUp ? (
+            <Badge variant="warning" size="sm" className="gap-1 font-bold">
+              <CornerDownRight className="w-3 h-3" />
+              Adaptive Follow-up
+            </Badge>
+          ) : (
+            <Badge variant="brand" size="sm" className="gap-1 font-bold">
+              <Tag className="w-3 h-3" />
+              {question.category || getQuestionTypeLabel(question.questionType)}
+            </Badge>
+          )}
+
+          {question.questionType === "yes_no" && (
+            <Badge variant="neutral" size="sm" className="bg-purple-50/90 text-purple-800 border-purple-200/80 font-bold">
+              Yes/No
+            </Badge>
           )}
         </div>
       </div>
-    );
-  }
+
+      <div className="pt-2">
+        <h2 className="text-xl sm:text-2xl font-black text-slate-950 leading-snug tracking-tight">
+          &ldquo;{question.text}&rdquo;
+        </h2>
+        {question.followUpQuestionRelationship && (
+          <p className="text-xs text-blue-700 mt-2.5 font-bold">
+            ↳ {question.followUpQuestionRelationship}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}

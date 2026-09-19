@@ -40,46 +40,42 @@ export function InterviewHeader({
   };
 
   return (
-    <div
-      className="glass liquid-glass-panel p-5 space-y-4"
-      data-config='{"refraction": 0.22, "edgeHighlight": 0.85, "specular": 0.75, "zRadius": 18, "cornerRadius": 28}'
-    >
+    <div className="glass-secondary p-5 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <span className="text-sm font-bold text-gray-900">
+          <span className="text-sm font-extrabold text-slate-900 tracking-tight">
             Question {currentQuestionNumber} of ~{totalQuestions}
           </span>
           <Badge variant="brand" size="sm">
             {role}
           </Badge>
           {company && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
-              <Building2 className="w-3 h-3 text-gray-500" />
+            <span className="glass-capsule inline-flex items-center gap-1 px-3 py-0.5 text-xs font-bold text-slate-700">
+              <Building2 className="w-3 h-3 text-slate-500" />
               {company}
             </span>
           )}
           {getDifficultyBadge(difficulty)}
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg">
-            <Clock className="w-3.5 h-3.5 text-gray-500" />
+        <div className="flex items-center gap-3">
+          <div className="glass-capsule flex items-center gap-1.5 text-xs font-bold text-slate-700 px-3.5 py-1.5">
+            <Clock className="w-3.5 h-3.5 text-blue-600" />
             <span>{formatDuration(timeElapsedSeconds)}</span>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={onEndInterview}
-            className="text-gray-500 hover:text-red-600 hover:bg-red-50 gap-1.5"
+            className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-rose-600 hover:bg-rose-50/90 border border-slate-200/60 hover:border-rose-200 transition-all gap-1.5 inline-flex items-center cursor-pointer"
           >
             <XCircle className="w-4 h-4" />
             End Early
-          </Button>
+          </button>
         </div>
       </div>
 
-      <ProgressBar value={percentage} barClassName="bg-brand-600" />
+      <ProgressBar value={percentage} barClassName="glass-fluid-blue" />
     </div>
   );
 }

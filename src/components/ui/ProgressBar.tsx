@@ -20,14 +20,14 @@ export function ProgressBar({
 
   return (
     <div className="w-full">
-      <div className={cn("w-full h-2 bg-gray-100 rounded-full overflow-hidden", className)}>
+      <div className={cn("glass-progress-tube w-full", className)}>
         <div
-          className={cn("h-full bg-brand-600 rounded-full transition-all duration-300", barClassName)}
+          className={cn("h-full glass-fluid-blue rounded-full transition-all duration-500", barClassName)}
           style={{ width: `${percentage}%` }}
         />
       </div>
       {showLabel && (
-        <span className="mt-1 text-xs text-gray-500 font-medium">{Math.round(percentage)}%</span>
+        <span className="mt-1 text-xs text-slate-500 font-bold block">{Math.round(percentage)}%</span>
       )}
     </div>
   );

@@ -158,62 +158,73 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <AppShell>
-        <div className="space-y-6 pb-12">
+        <div className="space-y-10 sm:space-y-12 lg:space-y-14 pb-16">
           {/* Profile Completion Prompt if new user */}
           {user && (!profile || !profile.isOnboarded) && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                  <UserCheck className="w-5 h-5" />
+            <div className="liquid-glass-amber-panel p-6 sm:p-7 rounded-[28px] flex flex-col sm:flex-row items-center justify-between gap-5 border-white/95 animate-section-stagger-1">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-100/90 border border-amber-300/80 text-amber-800 flex items-center justify-center shrink-0 shadow-xs">
+                  <UserCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-amber-950">Complete Your Candidate Profile</h4>
-                  <p className="text-xs text-amber-800 mt-0.5">
+                  <h4 className="text-base font-black text-amber-950">Complete Your Candidate Profile</h4>
+                  <p className="text-xs sm:text-sm text-amber-900/90 mt-1 font-medium leading-relaxed">
                     Set your college, degree, skills, and target stream to receive tailored mock questions and precise readiness scoring.
                   </p>
                 </div>
               </div>
-              <Link href="/profile/setup">
-                <Button size="sm" className="whitespace-nowrap">
+              <Link href="/profile/setup" className="shrink-0">
+                <span className="glass-button-primary px-6 py-2.5 text-xs font-black whitespace-nowrap">
                   Complete Setup →
-                </Button>
+                </span>
               </Link>
             </div>
           )}
 
           {/* Personal Greeting with Real Candidate Name */}
-          <DashboardHeader userName={displayName} />
+          <div className="animate-section-stagger-1">
+            <DashboardHeader userName={displayName} />
+          </div>
 
-          {/* 1. Preparation Readiness % Card */}
-          <PreparationReadinessCard
-            targetRole={targetRole}
-            readinessPercentage={readiness}
-            categoryReadiness={categoryReadiness}
-          />
+          {/* 1. Preparation Readiness % Card & Continue Quick Access */}
+          <div className="space-y-6 sm:space-y-8 animate-section-stagger-2">
+            <PreparationReadinessCard
+              targetRole={targetRole}
+              readinessPercentage={readiness}
+              categoryReadiness={categoryReadiness}
+            />
 
-          {/* 2. Continue Where You Left Off Quick Access */}
-          <ContinueWhereYouLeftOffCard targetRole={targetRole} />
+            <ContinueWhereYouLeftOffCard targetRole={targetRole} />
+          </div>
 
-          {/* 3. Key Metrics */}
-          {metrics && <MetricsGrid metrics={metrics} />}
+          {/* 2. Key Metrics */}
+          {metrics && (
+            <div className="animate-section-stagger-3">
+              <MetricsGrid metrics={metrics} />
+            </div>
+          )}
 
-          {/* 4. Actionable Improvement Insight */}
-          <ImprovementInsightCard
-            recommendation={metrics?.topRecommendation || `Practice ${targetRole} technical trade-offs and quantitative project results.`}
-            improvementNotice={improvementNotice}
-            recurringGaps={recurringGaps}
-          />
+          {/* 3. Actionable Improvement Insight */}
+          <div className="animate-section-stagger-4">
+            <ImprovementInsightCard
+              recommendation={metrics?.topRecommendation || `Practice ${targetRole} technical trade-offs and quantitative project results.`}
+              improvementNotice={improvementNotice}
+              recurringGaps={recurringGaps}
+            />
+          </div>
 
-          {/* 5. Performance Overview & Skill Breakdown */}
+          {/* 4. Performance Overview & Skill Breakdown */}
           {metrics && skills && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 animate-section-stagger-4">
               <PerformanceOverview trendData={metrics.scoreTrend} />
               <SkillBreakdown skills={skills} />
             </div>
           )}
 
-          {/* 6. Recent Mock Interviews Table */}
-          <RecentInterviewsTable sessions={sessions} />
+          {/* 5. Recent Mock Interviews Table */}
+          <div className="animate-section-stagger-5">
+            <RecentInterviewsTable sessions={sessions} />
+          </div>
         </div>
       </AppShell>
     </ProtectedRoute>

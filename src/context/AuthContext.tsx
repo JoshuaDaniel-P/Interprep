@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [role, setRole] = useState<UserRole>("CANDIDATE");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchUserProfile = async (uid: string): Promise<CandidateProfile | null> => {
     try {
@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (isMounted) {
         setIsLoading(false);
       }
-    }, 1200);
+    }, 400);
 
     // 1. Check if an active session is persisted in localStorage
     if (typeof window !== "undefined") {

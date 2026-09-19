@@ -125,19 +125,16 @@ export default function AdminPage() {
       <AppShell>
         <div className="space-y-6 max-w-5xl mx-auto pb-12">
           {/* Header Panel */}
-          <div
-            className="glass liquid-glass-panel p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-            data-config='{"refraction": 0.25, "edgeHighlight": 0.9, "specular": 0.8, "zRadius": 22, "cornerRadius": 32}'
-          >
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 mockup-pill-badge">
+          <div className="glass-primary p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="glass-capsule px-3.5 py-1 text-xs font-black text-blue-800 gap-2 inline-flex items-center shadow-xs">
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                 Administrative Access Only
               </div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
                 Admin Management Portal
               </h1>
-              <p className="text-xs sm:text-sm text-slate-600 font-semibold max-w-xl">
+              <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-xl">
                 Create and manage candidate accounts for PrepPilot realistic AI mock interviews.
               </p>
             </div>
@@ -162,16 +159,13 @@ export default function AdminPage() {
           )}
 
           {/* Create Candidate Card */}
-          <div
-            className="glass liquid-glass-panel p-6 sm:p-7 space-y-4"
-            data-config='{"refraction": 0.22, "edgeHighlight": 0.85, "specular": 0.75, "zRadius": 18, "cornerRadius": 28}'
-          >
-            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-200/60">
-              <div className="w-8 h-8 rounded-xl bg-blue-600/15 text-blue-600 flex items-center justify-center">
+          <div className="glass-secondary p-6 sm:p-7 space-y-4">
+            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-200/50">
+              <div className="glass-icon-bubble w-8 h-8 text-blue-600">
                 <UserPlus className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-extrabold text-slate-900">
+                <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">
                   Create Candidate Account
                 </h3>
                 <p className="text-xs text-slate-500 font-semibold">
@@ -190,7 +184,7 @@ export default function AdminPage() {
                   placeholder="e.g. Jordan Smith"
                   value={candidateName}
                   onChange={(e) => setCandidateName(e.target.value)}
-                  className="w-full p-2.5 text-xs bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-slate-900"
+                  className="w-full p-2.5 text-xs bg-white/90 border border-white/95 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-slate-900 shadow-xs"
                   required
                 />
               </div>
@@ -204,7 +198,7 @@ export default function AdminPage() {
                   placeholder="jordan@example.com"
                   value={candidateEmail}
                   onChange={(e) => setCandidateEmail(e.target.value)}
-                  className="w-full p-2.5 text-xs bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-slate-900"
+                  className="w-full p-2.5 text-xs bg-white/90 border border-white/95 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-slate-900 shadow-xs"
                   required
                 />
               </div>
@@ -218,7 +212,7 @@ export default function AdminPage() {
                   placeholder="min 6 chars"
                   value={tempPassword}
                   onChange={(e) => setTempPassword(e.target.value)}
-                  className="w-full p-2.5 text-xs bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-slate-900"
+                  className="w-full p-2.5 text-xs bg-white/90 border border-white/95 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-slate-900 shadow-xs"
                   required
                 />
               </div>
@@ -230,7 +224,7 @@ export default function AdminPage() {
                 <select
                   value={targetRole}
                   onChange={(e) => setTargetRole(e.target.value)}
-                  className="w-full p-2.5 text-xs bg-white/90 border border-slate-200/90 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-slate-900"
+                  className="w-full p-2.5 text-xs bg-white/90 border border-white/95 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-slate-900 shadow-xs"
                 >
                   <option value="Software Developer">Software Developer</option>
                   <option value="Frontend Developer">Frontend Developer</option>
@@ -244,8 +238,7 @@ export default function AdminPage() {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="glass liquid-glass-btn-primary px-6 py-2.5 text-xs font-black gap-2"
-                  data-config='{"button": true, "zRadius": 14, "cornerRadius": 9999}'
+                  className="glass-button-primary px-6 py-2.5 text-xs font-black gap-2"
                 >
                   {isCreating ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <UserPlus className="w-4 h-4 text-white" />}
                   <span>{isCreating ? "Provisioning Candidate..." : "Create Candidate Account"}</span>
@@ -255,10 +248,7 @@ export default function AdminPage() {
           </div>
 
           {/* Existing Candidates List */}
-          <div
-            className="glass liquid-glass-panel p-6 space-y-4"
-            data-config='{"refraction": 0.22, "edgeHighlight": 0.85, "specular": 0.75, "zRadius": 18, "cornerRadius": 28}'
-          >
+          <div className="glass-secondary p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-extrabold text-slate-900">

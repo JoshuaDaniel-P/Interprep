@@ -6,19 +6,16 @@ import { LiquidGlassProvider } from "@/components/ui/LiquidGlassProvider";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
 import { MobileNav } from "./MobileNav";
+import { StudioGlassEnvironment } from "./StudioGlassEnvironment";
 
 function AppShellContent({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
     <LiquidGlassProvider>
-      <div className="min-h-screen flex font-sans antialiased text-slate-900 transition-colors duration-300 relative bg-[#f8fafc] overflow-x-hidden">
-        {/* Subtle White Studio Background Environment with Restrained Refraction Highlights */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-60">
-          <div className="absolute -top-40 -left-40 w-[35rem] h-[35rem] rounded-full bg-blue-200/25 blur-3xl" />
-          <div className="absolute top-1/3 -right-20 w-[40rem] h-[40rem] rounded-full bg-indigo-100/30 blur-3xl" />
-          <div className="absolute -bottom-32 left-1/4 w-[45rem] h-[45rem] rounded-full bg-slate-200/40 blur-3xl" />
-        </div>
+      <div className="min-h-screen flex font-sans antialiased text-slate-900 transition-colors duration-300 relative bg-[#D5D8DC] overflow-x-hidden">
+        {/* Light Grey Studio Environment with Layered Floating Clear Liquid Glass Geometry */}
+        <StudioGlassEnvironment />
 
         {/* Desktop Sidebar */}
         <div className="relative z-50 hidden md:block w-64 shrink-0">
@@ -34,7 +31,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
         {/* Main Content Area */}
         <div className="flex-1 md:pl-64 flex flex-col min-w-0 relative z-10">
           <AppHeader onOpenMobileNav={() => setMobileNavOpen(true)} />
-          <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+          <main className="flex-1 px-6 sm:px-10 lg:px-12 xl:pr-36 2xl:pr-48 py-8 sm:py-12 max-w-[1360px] w-full mr-auto animate-page-entrance">
             {children}
           </main>
         </div>
