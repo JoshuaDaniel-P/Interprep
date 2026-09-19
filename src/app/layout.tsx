@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/context/AuthContext";
+import { ChunkErrorRecovery } from "@/components/layout/ChunkErrorRecovery";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased bg-slate-50 text-slate-900">
+        <ChunkErrorRecovery />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
