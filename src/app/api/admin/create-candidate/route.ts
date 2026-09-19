@@ -1,30 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { initializeApp, getApps, deleteApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "demo-api-key",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "preppilot-demo.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "preppilot-demo",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "preppilot-demo.appspot.com",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abcdef",
-};
+import { getServerDb, withIsolatedServerAuth } from "@/lib/serverFirebase";
+import { createCandidateRequestSchema } from "@/lib/validations/apiSchemas";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
-  let secondaryApp: any = null;
   try {
-    const body = await req.json();
-    const { name, email, password, targetRole, adminEmail } = body;
-
-    if (!email || !password || !name) {
-      return NextResponse.json(
-        { error: "Name, email, and temporary password are required." },
-        { status: 400 }
-      );
+    const rawBody = await req.json().catch(() => null);
+    if (!rawBody) {
+      return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
     }
+
+    const validation = createCandidateRequestSchema.safeParse(rawBody);
+    if (!validation.success) {
+      const errorMsg = validation.error.issues.map((e) => e.message).join(", ");
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
+    }
+
+    const { name, email, password, targetRole, adminEmail } = validation.data;
 
     // Verify caller has admin privileges
     const adminEmailsEnv = process.env.ADMIN_EMAILS || "";
@@ -34,24 +28,25 @@ export async function POST(req: NextRequest) {
       .filter(Boolean);
     adminEmailsList.push("admin@preppilot.com");
 
-    const normalizedAdminEmail = (adminEmail || "").trim().toLowerCase();
+    const normalizedAdminEmail = adminEmail.trim().toLowerCase();
     if (!adminEmailsList.includes(normalizedAdminEmail)) {
+      logger.warn("Unauthorized attempt to create candidate", "create-candidate", { adminEmail });
       return NextResponse.json(
         { error: "Unauthorized: Only administrators can create candidate accounts." },
         { status: 403 }
       );
     }
 
-    // Initialize an isolated secondary Firebase App so we don't interfere with the admin's session
-    const appName = `admin-create-${Date.now()}`;
-    secondaryApp = initializeApp(firebaseConfig, appName);
-    const secondaryAuth = getAuth(secondaryApp);
-
     let uid = `c-${Date.now()}`;
+
+    // Execute user creation in a safely managed, isolated Firebase Auth session
     try {
-      const userCred = await createUserWithEmailAndPassword(secondaryAuth, email.trim(), password);
-      uid = userCred.user.uid;
-      await signOut(secondaryAuth);
+      uid = await withIsolatedServerAuth(async (auth) => {
+        const userCred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        const createdUid = userCred.user.uid;
+        await signOut(auth);
+        return createdUid;
+      });
     } catch (authErr: any) {
       if (authErr?.code === "auth/email-already-in-use") {
         return NextResponse.json(
@@ -64,16 +59,16 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      console.warn("Firebase Auth creation notice (using generated UID if offline):", authErr.message);
+      logger.warn("Firebase Auth user creation notice (falling back to offline UID)", "create-candidate", authErr);
     }
 
-    // Create Candidate Profile in Firestore (strictly CANDIDATE role)
+    // Create Candidate Profile in Firestore
     const newCandidateProfile = {
       uid,
       email: email.trim(),
       fullName: name.trim(),
       status: "Active",
-      role: "CANDIDATE", // Must NEVER be ADMIN
+      role: "CANDIDATE",
       targetGoal: {
         targetRole: targetRole || "Software Developer",
         targetCompanyType: "Product Company",
@@ -102,11 +97,18 @@ export async function POST(req: NextRequest) {
     };
 
     try {
+      const db = getServerDb();
       const userDocRef = doc(db, "users", uid);
       await setDoc(userDocRef, newCandidateProfile, { merge: true });
     } catch (dbErr) {
-      console.warn("Firestore save notice:", dbErr);
+      logger.warn("Firestore candidate save notice", "create-candidate", dbErr);
     }
+
+    logger.info("Candidate account successfully created", "create-candidate", {
+      uid,
+      email: email.trim(),
+      targetRole: targetRole || "Software Developer",
+    });
 
     return NextResponse.json({
       success: true,
@@ -121,18 +123,10 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error("create-candidate error:", error);
+    logger.error("Create candidate unexpected error", "create-candidate", error);
     return NextResponse.json(
       { error: error?.message || "Failed to create candidate account." },
       { status: 500 }
     );
-  } finally {
-    if (secondaryApp) {
-      try {
-        await deleteApp(secondaryApp);
-      } catch {
-        // ignore cleanup error
-      }
-    }
   }
 }

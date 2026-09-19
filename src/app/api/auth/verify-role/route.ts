@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getServerDb } from "@/lib/serverFirebase";
+import { verifyRoleRequestSchema } from "@/lib/validations/apiSchemas";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, uid } = await req.json();
+    const raw = await req.json().catch(() => ({}));
+    const validation = verifyRoleRequestSchema.safeParse(raw);
+
+    const email = validation.success ? validation.data.email : null;
+    const uid = validation.success ? validation.data.uid : null;
 
     if (!email && !uid) {
       return NextResponse.json({ role: "CANDIDATE" });
@@ -26,9 +32,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ role: "ADMIN" });
     }
 
-    // 2. Check Firestore admins collection if uid or email is present
+    // 2. Check Firestore admins collection if uid is present
     if (uid) {
       try {
+        const db = getServerDb();
         const adminDocRef = doc(db, "admins", uid);
         const adminDocSnap = await getDoc(adminDocRef);
         if (adminDocSnap.exists()) {
@@ -42,14 +49,13 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ role: "ADMIN" });
         }
       } catch (dbErr) {
-        console.warn("Firestore role lookup error:", dbErr);
+        logger.warn("Firestore role lookup notice", "verify-role", { uid }, dbErr);
       }
     }
 
-    // Default to NORMAL CANDIDATE
     return NextResponse.json({ role: "CANDIDATE" });
   } catch (error) {
-    console.error("verify-role error:", error);
+    logger.error("Verify role unexpected error", "verify-role", error);
     return NextResponse.json({ role: "CANDIDATE" });
   }
 }

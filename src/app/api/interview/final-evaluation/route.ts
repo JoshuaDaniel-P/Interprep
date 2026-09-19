@@ -8,24 +8,30 @@ import {
 import { CandidateProfile } from "@/types/candidate";
 import { Evaluation } from "@/types/evaluation";
 
-interface FinalEvaluationRequestBody {
-  config: InterviewConfig;
-  candidateProfile: CandidateProfile | null;
-  recordedQuestions: RecordedQuestion[];
-  durationSeconds: number;
-  userId?: string;
-}
+import { finalEvaluationRequestSchema } from "@/lib/validations/apiSchemas";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as FinalEvaluationRequestBody;
+    const rawBody = await req.json().catch(() => null);
+    if (!rawBody) {
+      return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
+    }
+
+    const validation = finalEvaluationRequestSchema.safeParse(rawBody);
+    if (!validation.success) {
+      const errorMsg = validation.error.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
+      logger.warn("final-evaluation validation error", "final-evaluation", { errorMsg });
+      return NextResponse.json({ error: `Validation error: ${errorMsg}` }, { status: 400 });
+    }
+
     const {
       config,
       candidateProfile,
-      recordedQuestions = [],
-      durationSeconds = 600,
-      userId = "candidate-active",
-    } = body;
+      recordedQuestions,
+      durationSeconds,
+      userId,
+    } = validation.data as any;
 
     const apiKey = process.env.OPENAI_API_KEY;
 

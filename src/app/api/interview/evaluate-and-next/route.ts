@@ -8,38 +8,33 @@ import {
 } from "@/types/interview";
 import { CandidateProfile } from "@/types/candidate";
 import { adaptiveEngine } from "@/services/adaptiveEngine.service";
-
-interface EvaluateAndNextRequestBody {
-  config: InterviewConfig;
-  candidateProfile: CandidateProfile | null;
-  previousQuestions: RecordedQuestion[];
-  currentQuestion: {
-    id: string;
-    text: string;
-    questionType?: QuestionType;
-    difficulty?: Difficulty;
-    isFollowUp?: boolean;
-    questionNumber: number;
-  };
-  candidateAnswer: string;
-  answerDuration: number;
-  questionNumber: number;
-  targetTotal?: number;
-}
+import { evaluateAndNextRequestSchema } from "@/lib/validations/apiSchemas";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as EvaluateAndNextRequestBody;
+    const rawBody = await req.json().catch(() => null);
+    if (!rawBody) {
+      return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
+    }
+
+    const validation = evaluateAndNextRequestSchema.safeParse(rawBody);
+    if (!validation.success) {
+      const errorMsg = validation.error.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
+      logger.warn("evaluate-and-next validation error", "evaluate-and-next", { errorMsg });
+      return NextResponse.json({ error: `Validation error: ${errorMsg}` }, { status: 400 });
+    }
+
     const {
       config,
       candidateProfile,
-      previousQuestions = [],
+      previousQuestions,
       currentQuestion,
       candidateAnswer,
-      answerDuration = 45,
-      questionNumber = 1,
-      targetTotal = 5,
-    } = body;
+      answerDuration,
+      questionNumber,
+      targetTotal,
+    } = validation.data as any;
 
     const geminiKey = process.env.GEMINI_API_KEY;
     const openAiKey = process.env.OPENAI_API_KEY;
