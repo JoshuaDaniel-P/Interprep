@@ -6,21 +6,15 @@ import {
   InterviewConfig,
   InterviewQuestion,
   InterviewAnswer,
-<<<<<<< HEAD
   InterviewSession,
-} from "@/types/interview";
-import { adaptiveEngine, getStreamQuestionCount } from "@/services/adaptiveEngine.service";
-import { evaluationService } from "@/services/evaluation.service";
-import { interviewService } from "@/services/interview.service";
-import { useAuth } from "@/context/AuthContext";
-=======
   RecordedQuestion,
   QuestionType,
 } from "@/types/interview";
 import { useAuth } from "@/context/AuthContext";
 import { interviewService } from "@/services/interview.service";
 import { candidateService } from "@/services/candidate.service";
->>>>>>> origin/main
+import { adaptiveEngine, getStreamQuestionCount } from "@/services/adaptiveEngine.service";
+import { evaluationService } from "@/services/evaluation.service";
 
 interface InterviewContextType {
   config: InterviewConfig;
@@ -33,14 +27,10 @@ interface InterviewContextType {
   timeElapsedSeconds: number;
   questionDurationSeconds: number;
   isSubmitting: boolean;
-<<<<<<< HEAD
-  submitAnswer: (answerText: string) => Promise<void>;
-=======
   errorMessage: string | null;
   submitAnswer: (answerText: string) => Promise<void>;
   retryLastAnswer: () => Promise<void>;
   finishEarlyAndEvaluate: () => Promise<void>;
->>>>>>> origin/main
   endInterview: () => void;
 }
 
@@ -52,18 +42,14 @@ const defaultConfig: InterviewConfig = {
   interviewType: "Mixed",
   mode: "Text",
   difficulty: "Adaptive",
-  targetQuestionsCount: 15,
+  targetQuestionsCount: 5,
 };
 
 const InterviewContext = createContext<InterviewContextType | undefined>(undefined);
 
 export function InterviewProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-<<<<<<< HEAD
-  const { user } = useAuth();
-=======
   const { profile, user } = useAuth();
->>>>>>> origin/main
 
   const [config, setConfig] = useState<InterviewConfig>(defaultConfig);
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
@@ -77,7 +63,7 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
 
   const lastFailedAnswerRef = useRef<string | null>(null);
 
-  const targetQuestionsCount = config.targetQuestionsCount || 15;
+  const totalQuestions = getStreamQuestionCount(config);
 
   // 1. Initialize configuration and Question 1
   useEffect(() => {
@@ -93,30 +79,13 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
       }
       setConfig(activeConfig);
 
-      // Construct Candidate-specific initial question using actual profile
-      const userProject = profile?.projects?.[0];
-      let initialText = `Welcome! To begin our interview for the ${activeConfig.targetRole} role at ${activeConfig.company || activeConfig.companyType}, could you introduce yourself and walk me through a technical project you built recently?`;
-
-      if (userProject?.name) {
-        initialText = `Welcome! To start our interview for the ${activeConfig.targetRole} position at ${activeConfig.company || activeConfig.companyType}, could you give an overview of your work on "${userProject.name}" and your primary architectural contributions?`;
-      }
-
-      const initialQ: InterviewQuestion = {
-        id: "q-1",
-        questionNumber: 1,
-        totalQuestions: activeConfig.targetQuestionsCount || 15,
-        text: initialText,
-        category: "Candidate Project & Background",
-        questionType: "project",
-        difficulty: activeConfig.difficulty,
-        isFollowUp: false,
-      };
-
+      // Initial question tailored to candidate profile if available
+      const initialQ = adaptiveEngine.generateInitialQuestion(activeConfig);
       setQuestions([initialQ]);
     }
   }, [profile]);
 
-  // Overall session timer & per-question timer
+  // 2. Timer Loop
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeElapsedSeconds((prev) => prev + 1);
@@ -126,12 +95,7 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(timer);
   }, []);
 
-<<<<<<< HEAD
-  const totalQuestions = getStreamQuestionCount(config);
-
-=======
-  // Submit answer and query backend evaluate-and-next
->>>>>>> origin/main
+  // Submit answer and transition to next adaptive question or complete session
   const submitAnswer = async (answerText: string) => {
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -151,92 +115,114 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
     const updatedAnswers = [...answers, newAnswer];
     setAnswers(updatedAnswers);
 
-<<<<<<< HEAD
-    const nextQNum = currentQuestionIndex + 2; // 1-indexed next question
+    const nextQNum = currentQuestionIndex + 2;
 
     if (nextQNum > totalQuestions) {
-      // Complete interview: generate STAR structured evaluation
-      const evaluation = evaluationService.evaluateSession(config, questions, updatedAnswers);
+      // Complete interview: generate STAR evaluation and save
+      await completeAndSaveSession(updatedAnswers, questions);
+    } else {
+      // Try API route first, fallback to adaptiveEngine
+      let nextQ: InterviewQuestion | null = null;
+      try {
+        const response = await fetch("/api/interview/evaluate-and-next", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            config,
+            candidateProfile: profile,
+            previousQuestions: recordedQuestions,
+            currentQuestion: currentQ,
+            candidateAnswer: answerText,
+            answerDuration: durationForAnswer,
+            questionNumber: currentQuestionIndex + 1,
+            targetTotal: totalQuestions,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            if (data.recordedQuestion) {
+              setRecordedQuestions((prev) => [...prev, data.recordedQuestion]);
+            }
+            if (data.isComplete) {
+              await completeAndSaveSession(updatedAnswers, questions);
+              return;
+            }
+            if (data.nextQuestion) {
+              nextQ = {
+                id: `q-${nextQNum}`,
+                questionNumber: nextQNum,
+                totalQuestions,
+                text: data.nextQuestion.text,
+                category: data.nextQuestion.category,
+                questionType: data.nextQuestion.questionType,
+                difficulty: data.nextQuestion.difficulty,
+                isFollowUp: data.nextQuestion.isFollowUp,
+                followUpQuestionRelationship: data.nextQuestion.followUpQuestionRelationship,
+                yesNoOptions: data.nextQuestion.yesNoOptions,
+              };
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("API route evaluate-and-next error, using local adaptive engine:", e);
+      }
+
+      if (!nextQ) {
+        nextQ = adaptiveEngine.generateFollowUpQuestion(
+          config,
+          nextQNum,
+          currentQ.text,
+          answerText
+        );
+      }
+
+      setQuestions((prev) => [...prev, nextQ!]);
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setQuestionDurationSeconds(0);
+      setIsSubmitting(false);
+    }
+  };
+
+  const completeAndSaveSession = async (
+    finalAnswers: InterviewAnswer[],
+    finalQuestions: InterviewQuestion[]
+  ) => {
+    try {
+      const evaluation = evaluationService.evaluateSession(config, finalQuestions, finalAnswers);
 
       const completedSession: InterviewSession = {
         id: `session-${Date.now()}`,
-        userId: user?.uid || "guest",
+        userId: user?.uid || profile?.uid || "guest",
         createdAt: new Date().toISOString(),
+        completedAt: new Date().toISOString(),
         status: "completed",
         score: evaluation.overallScore,
         config,
-        questions,
-        answers: updatedAnswers,
+        questions: finalQuestions,
+        answers: finalAnswers,
+        recordedQuestions,
         currentQuestionIndex,
         timeElapsedSeconds,
         evaluation,
+        strengths: evaluation.strengths,
+        weaknesses: evaluation.improvements,
+        improvements: evaluation.recommendations,
       };
 
-      // Persist to Firestore + local storage
-      await interviewService.saveCompletedSession(completedSession, evaluation, user?.uid);
+      await interviewService.saveCompletedSession(
+        completedSession,
+        evaluation,
+        user?.uid || profile?.uid
+      );
 
       setIsSubmitting(false);
       router.push(`/results?sessionId=${completedSession.id}`);
-    } else {
-      // Generate adaptive follow-up
-      const followUpQ = adaptiveEngine.generateFollowUpQuestion(
-        config,
-        nextQNum,
-        currentQ.text,
-        answerText
-      );
-
-      setQuestions((prev) => [...prev, followUpQ]);
-      setCurrentQuestionIndex((prev) => prev + 1);
+    } catch (e) {
+      console.warn("Error completing interview session:", e);
       setIsSubmitting(false);
-    }
-=======
-    try {
-      const response = await fetch("/api/interview/evaluate-and-next", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          config,
-          candidateProfile: profile,
-          previousQuestions: recordedQuestions,
-          currentQuestion: currentQ,
-          candidateAnswer: answerText,
-          answerDuration: durationForAnswer,
-          questionNumber: currentQuestionIndex + 1,
-          targetTotal: targetQuestionsCount,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || "Evaluation failed");
-      }
-
-      const updatedRecorded = [...recordedQuestions, data.recordedQuestion];
-      setRecordedQuestions(updatedRecorded);
-
-      // Check if finished
-      if (data.isComplete || currentQuestionIndex + 1 >= targetQuestionsCount) {
-        await finalizeInterview(updatedRecorded, timeElapsedSeconds);
-      } else if (data.nextQuestion) {
-        setQuestions((prev) => [...prev, data.nextQuestion]);
-        setCurrentQuestionIndex((prev) => prev + 1);
-        setQuestionDurationSeconds(0);
-        setIsSubmitting(false);
-      } else {
-        // Fallback wrap up if no next question
-        await finalizeInterview(updatedRecorded, timeElapsedSeconds);
-      }
-    } catch (err) {
-      console.error("Interview submission error:", err);
-      setErrorMessage(
-        "There was a temporary network issue submitting your answer. Your response is saved. Please click Retry."
-      );
-      setIsSubmitting(false);
+      router.push("/results");
     }
   };
 
@@ -246,62 +232,9 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Finalize interview report and persist
-  const finalizeInterview = async (recorded: RecordedQuestion[], totalTime: number) => {
-    setIsSubmitting(true);
-    try {
-      const activeUid = user?.uid || profile?.uid || "candidate-user-active";
-
-      const res = await fetch("/api/interview/final-evaluation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          config,
-          candidateProfile: profile,
-          recordedQuestions: recorded,
-          durationSeconds: totalTime,
-          userId: activeUid,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success && data.storedRecord) {
-        // Save to Firestore and local storage
-        await interviewService.saveInterviewRecord(data.storedRecord);
-
-        // Update candidate readiness in profile
-        if (data.storedRecord.categoryScores) {
-          await candidateService.updateCandidateReadinessAfterInterview(
-            activeUid,
-            data.storedRecord.categoryScores
-          );
-        }
-
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem("preppilot_active_evaluation", JSON.stringify(data.evaluation));
-          sessionStorage.setItem("preppilot_completed_session", JSON.stringify(data.storedRecord));
-        }
-
-        router.push("/results");
-      } else {
-        throw new Error("Failed to generate final evaluation");
-      }
-    } catch (e) {
-      console.error("Failed to finalize interview:", e);
-      // Even if finalization endpoint fails, route to results with existing recorded questions
-      router.push("/results");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const finishEarlyAndEvaluate = async () => {
-    if (recordedQuestions.length === 0) {
-      router.push("/dashboard");
-      return;
-    }
-    await finalizeInterview(recordedQuestions, timeElapsedSeconds);
->>>>>>> origin/main
+    setIsSubmitting(true);
+    await completeAndSaveSession(answers, questions);
   };
 
   const endInterview = () => {
@@ -319,7 +252,7 @@ export function InterviewProvider({ children }: { children: React.ReactNode }) {
         answers,
         recordedQuestions,
         currentQuestionIndex,
-        totalQuestions: targetQuestionsCount,
+        totalQuestions,
         timeElapsedSeconds,
         questionDurationSeconds,
         isSubmitting,

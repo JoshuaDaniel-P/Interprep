@@ -1,12 +1,15 @@
 export type TargetRole =
   | "Software Engineer"
+  | "Software Developer"
   | "Frontend Developer"
   | "Backend Developer"
   | "Data Analyst"
+  | "Data Scientist"
+  | "UI Designer"
+  | "College Lecturer"
   | "Product Manager"
   | "Marketing"
-  | "Sales"
-  | string;
+  | "Sales";
 
 export type CompanyType =
   | "Startup"
@@ -14,8 +17,7 @@ export type CompanyType =
   | "Service Company"
   | "Consulting"
   | "Fintech"
-  | "Enterprise"
-  | string;
+  | "Enterprise";
 
 export type ExperienceLevel =
   | "Student"
@@ -37,11 +39,13 @@ export type Difficulty =
   | "Pressure";
 
 export type QuestionType =
-  | "technical"
+  | "introductory"
   | "project"
   | "candidate_specific"
   | "behavioral"
   | "situational"
+  | "technical"
+  | "system_design"
   | "role_specific"
   | "company_oriented"
   | "problem_solving"
@@ -59,9 +63,7 @@ export interface InterviewConfig {
   interviewType: InterviewType;
   mode: InterviewMode;
   difficulty: Difficulty;
-<<<<<<< HEAD
   questionCount?: number;
-=======
   targetQuestionsCount?: number;
 }
 
@@ -77,7 +79,6 @@ export interface QuestionEvaluation {
   weaknesses: string[];
   missingInformation: string[];
   feedback?: string;
->>>>>>> origin/main
 }
 
 export interface InterviewQuestion {
@@ -159,7 +160,6 @@ export interface InterviewSession {
   userId?: string;
   createdAt: string;
   completedAt?: string;
-  userId?: string;
   config: InterviewConfig;
   status: InterviewStatus;
   questions: InterviewQuestion[];
@@ -168,13 +168,10 @@ export interface InterviewSession {
   currentQuestionIndex: number;
   timeElapsedSeconds: number;
   score?: number;
-<<<<<<< HEAD
   evaluation?: any;
-=======
   categoryScores?: CategoryScores;
   strengths?: string[];
   weaknesses?: string[];
   improvements?: string[];
   recommendedPreparationAreas?: string[];
->>>>>>> origin/main
 }

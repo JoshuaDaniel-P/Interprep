@@ -20,10 +20,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const targetRole = profile?.targetGoal?.targetRole || "Software Developer";
 
   const activeUser = {
+    id: user?.uid || profile?.uid || "candidate-user",
     name: displayName,
     email: displayEmail,
     targetRole: targetRole,
     avatarUrl: user?.photoURL || "",
+    joinedDate: profile?.createdAt || "2026-01-01",
   };
 
   return (

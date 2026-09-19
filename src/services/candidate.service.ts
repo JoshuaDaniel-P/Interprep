@@ -93,6 +93,16 @@ export class CandidateService {
       projects: [],
       experience: [],
       achievements: [],
+      education: {
+        highestQualification: "B.Tech / B.E.",
+        degree: "Computer Science",
+        branch: "Engineering",
+        institution: "",
+        graduationYear: 2025,
+        cgpaOrPercentage: "",
+        strongSubjects: [],
+        weakSubjects: [],
+      },
       targetGoal: {
         targetRole: "Software Developer",
         targetCompanyType: "Product Company",

@@ -4,44 +4,12 @@ import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Evaluation } from "@/types/evaluation";
-<<<<<<< HEAD
-import { InterviewSession } from "@/types/interview";
-import { mockEvaluationDetails } from "@/data/mock/interview.mock";
-=======
-import { StoredInterviewRecord, RecordedQuestion } from "@/types/interview";
->>>>>>> origin/main
+import { InterviewSession, StoredInterviewRecord, RecordedQuestion } from "@/types/interview";
 import { interviewService } from "@/services/interview.service";
+import { mockEvaluationDetails } from "@/data/mock/interview.mock";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-<<<<<<< HEAD
-import { CheckCircle2, AlertCircle, Lightbulb, PlayCircle, History, Award, FileText } from "lucide-react";
-
-function ResultsContent() {
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get("sessionId") || "session-101";
-
-  const [evaluation, setEvaluation] = useState<Evaluation>(mockEvaluationDetails["session-101"]);
-  const [session, setSession] = useState<InterviewSession | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadResults() {
-      setIsLoading(true);
-      try {
-        const evalResult = await interviewService.getEvaluation(sessionId);
-        if (evalResult) {
-          setEvaluation(evalResult);
-        }
-        const sessionResult = await interviewService.getInterviewById(sessionId);
-        if (sessionResult) {
-          setSession(sessionResult);
-        }
-      } catch (e) {
-        console.warn("Error loading results:", e);
-      } finally {
-        setIsLoading(false);
-=======
 import {
   CheckCircle2,
   AlertCircle,
@@ -60,59 +28,102 @@ import {
   Building2,
   Check,
   AlertTriangle,
+  FileText,
 } from "lucide-react";
 
-export function ResultsEvaluationView() {
+function ResultsContent() {
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("sessionId") || "session-101";
+
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
+  const [session, setSession] = useState<InterviewSession | StoredInterviewRecord | null>(null);
   const [sessionRecord, setSessionRecord] = useState<StoredInterviewRecord | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [expandedQuestion, setExpandedQuestion] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadResults() {
-      // 1. Try session storage first
-      if (typeof window !== "undefined") {
-        const activeEvalStr = sessionStorage.getItem("preppilot_active_evaluation");
-        const activeSessionStr = sessionStorage.getItem("preppilot_completed_session");
-        if (activeEvalStr) {
-          try {
-            setEvaluation(JSON.parse(activeEvalStr));
-          } catch {}
+      setIsLoading(true);
+      try {
+        // 1. Try session storage first
+        if (typeof window !== "undefined") {
+          const activeEvalStr = sessionStorage.getItem("preppilot_active_evaluation");
+          const activeSessionStr = sessionStorage.getItem("preppilot_completed_session");
+          if (activeEvalStr) {
+            try {
+              setEvaluation(JSON.parse(activeEvalStr));
+            } catch {}
+          }
+          if (activeSessionStr) {
+            try {
+              const parsed = JSON.parse(activeSessionStr);
+              setSessionRecord(parsed);
+            } catch {}
+          }
         }
-        if (activeSessionStr) {
-          try {
-            setSessionRecord(JSON.parse(activeSessionStr));
-          } catch {}
-        }
-      }
 
-      // 2. Fallback to service if not in session storage
-      const result = await interviewService.getEvaluation("session-101");
-      if (result) {
-        setEvaluation((prev) => prev || result);
->>>>>>> origin/main
+        // 2. Load from service (Firestore or mock)
+        const [evalResult, sessionResult] = await Promise.all([
+          interviewService.getEvaluation(sessionId).catch(() => null),
+          interviewService.getInterviewById(sessionId).catch(() => null),
+        ]);
+
+        if (evalResult) {
+          setEvaluation((prev) => prev || evalResult);
+        } else if (!evaluation) {
+          // Fallback mock if nothing else
+          setEvaluation(mockEvaluationDetails[sessionId] || mockEvaluationDetails["session-101"]);
+        }
+
+        if (sessionResult) {
+          setSession(sessionResult);
+        }
+      } catch (err) {
+        console.warn("Failed to load evaluation details:", err);
+      } finally {
+        setIsLoading(false);
       }
     }
+
     loadResults();
   }, [sessionId]);
 
-<<<<<<< HEAD
-  const skills = [
-    { label: "Content", score: evaluation.skills.content.score, feedback: evaluation.skills.content.feedback },
-    { label: "Structure (STAR)", score: evaluation.skills.structure.score, feedback: evaluation.skills.structure.feedback },
-    { label: "Relevance", score: evaluation.skills.relevance.score, feedback: evaluation.skills.relevance.feedback },
-    { label: "Clarity", score: evaluation.skills.clarity.score, feedback: evaluation.skills.clarity.feedback },
-    { label: "Confidence", score: evaluation.skills.confidence.score, feedback: evaluation.skills.confidence.feedback },
-    { label: "Conciseness", score: evaluation.skills.conciseness.score, feedback: evaluation.skills.conciseness.feedback },
-=======
-  if (!evaluation) {
+  if (isLoading && !evaluation) {
     return (
-      <div className="p-12 text-center text-gray-500">
-        Loading evaluation report...
+      <div className="p-16 text-center text-slate-500">
+        <div className="animate-pulse space-y-3">
+          <div className="h-6 bg-slate-200 rounded w-1/3 mx-auto"></div>
+          <div className="h-4 bg-slate-100 rounded w-1/4 mx-auto"></div>
+          <p className="text-sm">Loading comprehensive performance evaluation...</p>
+        </div>
       </div>
     );
   }
 
-  // 7 Required Categories
+  if (!evaluation) {
+    return (
+      <div className="p-12 text-center text-slate-600 max-w-lg mx-auto bg-white rounded-2xl border border-slate-200">
+        <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
+        <h2 className="text-lg font-bold text-slate-900 mb-1">No Evaluation Report Found</h2>
+        <p className="text-xs text-slate-500 mb-6">
+          Could not retrieve evaluation results for session ID: <code className="text-brand-600">{sessionId}</code>.
+        </p>
+        <Link href="/setup">
+          <Button>Start a New Interview</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // Determine questions list
+  const questionsList: RecordedQuestion[] =
+    evaluation.questions ||
+    sessionRecord?.questions ||
+    (session as StoredInterviewRecord)?.questions ||
+    (session as InterviewSession)?.recordedQuestions ||
+    [];
+
+  // 7 Core Categories
   const categories = [
     {
       label: "Technical Knowledge",
@@ -156,11 +167,52 @@ export function ResultsEvaluationView() {
       icon: Building2,
       desc: "Understanding of company challenges, scale, and organizational fit.",
     },
->>>>>>> origin/main
   ];
 
-  const questionsList: RecordedQuestion[] =
-    evaluation.questions || sessionRecord?.questions || [];
+  // 6 STAR / Competency Skills fallback or complement
+  const skills = evaluation.skills
+    ? [
+        { label: "Content", score: evaluation.skills.content.score, feedback: evaluation.skills.content.feedback },
+        { label: "Structure (STAR)", score: evaluation.skills.structure.score, feedback: evaluation.skills.structure.feedback },
+        { label: "Relevance", score: evaluation.skills.relevance.score, feedback: evaluation.skills.relevance.feedback },
+        { label: "Clarity", score: evaluation.skills.clarity.score, feedback: evaluation.skills.clarity.feedback },
+        { label: "Confidence", score: evaluation.skills.confidence.score, feedback: evaluation.skills.confidence.feedback },
+        { label: "Conciseness", score: evaluation.skills.conciseness.score, feedback: evaluation.skills.conciseness.feedback },
+      ]
+    : [];
+
+  const roleText =
+    (session as InterviewSession)?.config?.targetRole ||
+    (session as StoredInterviewRecord)?.role ||
+    sessionRecord?.role ||
+    "Software Engineer";
+
+  const companyText =
+    (session as InterviewSession)?.config?.company ||
+    (session as InterviewSession)?.config?.companyType ||
+    (session as StoredInterviewRecord)?.company ||
+    (session as StoredInterviewRecord)?.companyType ||
+    sessionRecord?.company ||
+    sessionRecord?.companyType ||
+    "Tech Company";
+
+  const difficultyText =
+    (session as InterviewSession)?.config?.difficulty ||
+    (session as StoredInterviewRecord)?.difficulty ||
+    sessionRecord?.difficulty ||
+    "Realistic";
+
+  const completedCount =
+    questionsList.length ||
+    (session as InterviewSession)?.answers?.length ||
+    (session as StoredInterviewRecord)?.questionCount ||
+    sessionRecord?.questionCount ||
+    0;
+
+  const recommendations =
+    evaluation.recommendedPreparationAreas ||
+    evaluation.recommendations ||
+    [];
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
@@ -175,17 +227,9 @@ export function ResultsEvaluationView() {
             Performance Review & Gap Analysis
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-<<<<<<< HEAD
-            {session ? (
-              <span>
-                {session.config.targetRole} • {session.config.companyType} ({session.config.difficulty}) • {session.answers.length} Questions Completed
-              </span>
-            ) : (
-              "Structured analysis generated across 6 core interview competencies."
-            )}
-=======
-            {sessionRecord ? `${sessionRecord.role} at ${sessionRecord.company} (${sessionRecord.difficulty} Difficulty)` : "Comprehensive adaptive evaluation report across 7 core dimensions."}
->>>>>>> origin/main
+            <span>
+              {roleText} • {companyText} ({difficultyText}) • {completedCount} Questions Completed
+            </span>
           </p>
         </div>
 
@@ -243,30 +287,58 @@ export function ResultsEvaluationView() {
         </CardContent>
       </Card>
 
-      {/* Recommended Preparation Areas (Requirement 10: Identify what to prepare, do not teach course) */}
-      <Card className="border-brand-300 bg-brand-50/40">
-        <CardHeader>
-          <CardTitle className="text-sm font-bold text-brand-950 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-brand-600" />
-            Recommended Preparation Areas (What to Focus On)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 pt-0 space-y-3">
-          {(evaluation.recommendedPreparationAreas || evaluation.recommendations).map((rec, idx) => (
-            <div
-              key={idx}
-              className="p-3.5 rounded-xl bg-white border border-brand-200 text-xs sm:text-sm text-brand-950 font-medium leading-relaxed flex items-start gap-2.5"
-            >
-              <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <span>{rec}</span>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      {/* 6 STAR Competencies if available */}
+      {skills.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-bold text-slate-900">
+              STAR & Core Competencies Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {skills.map((skill) => (
+              <div
+                key={skill.label}
+                className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800">{skill.label}</span>
+                  <span className="text-xs font-bold text-brand-700">{skill.score} / 10</span>
+                </div>
+                <ProgressBar value={skill.score * 10} barClassName="bg-brand-600" />
+                <p className="text-[11px] text-slate-600 pt-1 leading-relaxed">{skill.feedback}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Strengths & Weaknesses */}
+      {/* Recommended Preparation Areas */}
+      {recommendations.length > 0 && (
+        <Card className="border-brand-300 bg-brand-50/40">
+          <CardHeader>
+            <CardTitle className="text-sm font-bold text-brand-950 flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-brand-600" />
+              Recommended Preparation Areas (What to Focus On)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 pt-0 space-y-3">
+            {recommendations.map((rec, idx) => (
+              <div
+                key={idx}
+                className="p-3.5 rounded-xl bg-white border border-brand-200 text-xs sm:text-sm text-brand-950 font-medium leading-relaxed flex items-start gap-2.5"
+              >
+                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>{rec}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Strengths & Areas to Improve */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* What You Did Well */}
+        {/* Observed Strengths */}
         <Card className="border-emerald-200/80 bg-emerald-50/30">
           <CardHeader>
             <CardTitle className="text-sm font-bold text-emerald-950 flex items-center gap-2">
@@ -303,7 +375,7 @@ export function ResultsEvaluationView() {
         </Card>
       </div>
 
-      {/* Pattern Insights: Recurring Issues & Structure/Technical Gaps */}
+      {/* Pattern Insights: Recurring Issues & Identified Gaps */}
       {(evaluation.recurringIssues?.length || evaluation.technicalGaps?.length) ? (
         <Card className="border-slate-200">
           <CardHeader>
@@ -407,7 +479,7 @@ export function ResultsEvaluationView() {
                           Candidate Answer:
                         </span>
                         <div className="p-3.5 rounded-lg bg-white border border-slate-200 text-slate-800 leading-relaxed">
-                          {q.candidateAnswer}
+                          {q.candidateAnswer || "No answer provided"}
                         </div>
                       </div>
 
@@ -472,19 +544,8 @@ export function ResultsEvaluationView() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200">
         <Link href={`/history/${sessionId}`} className="w-full sm:w-auto">
           <Button variant="outline" className="w-full gap-2">
-<<<<<<< HEAD
             <FileText className="w-4 h-4" />
             View Full Q&A Transcript
-=======
-            <History className="w-4 h-4" />
-            View History
-          </Button>
-        </Link>
-        <Link href="/setup" className="w-full sm:w-auto">
-          <Button size="lg" className="w-full gap-2 px-8">
-            <PlayCircle className="w-5 h-5" />
-            Practice Another Interview
->>>>>>> origin/main
           </Button>
         </Link>
         <div className="flex items-center gap-3 w-full sm:w-auto">

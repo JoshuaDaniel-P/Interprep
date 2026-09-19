@@ -3,11 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { InterviewQuestion } from "@/types/interview";
 import { Card, CardContent } from "@/components/ui/Card";
-<<<<<<< HEAD
-import { Sparkles, CornerDownRight, Volume2, VolumeX } from "lucide-react";
-=======
-import { Sparkles, CornerDownRight, Tag } from "lucide-react";
->>>>>>> origin/main
+import { Sparkles, CornerDownRight, Volume2, VolumeX, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 
 interface QuestionDisplayProps {
@@ -15,9 +11,31 @@ interface QuestionDisplayProps {
   autoSpeak?: boolean;
 }
 
-<<<<<<< HEAD
 export function QuestionDisplay({ question, autoSpeak = false }: QuestionDisplayProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const getQuestionTypeLabel = (type?: string) => {
+    switch (type) {
+      case "project":
+        return "Candidate Project Deep Dive";
+      case "candidate_specific":
+        return "Candidate Specific Question";
+      case "yes_no":
+        return "Direct Yes/No Screening";
+      case "behavioral":
+        return "Behavioral Competency (STAR)";
+      case "situational":
+        return "Situational & Crisis Handling";
+      case "problem_solving":
+        return "System & Logic Problem Solving";
+      case "company_oriented":
+        return "Company Alignment & Mission";
+      case "short_answer":
+        return "Quick Technical Check";
+      default:
+        return "Core Technical Question";
+    }
+  };
 
   const speakQuestion = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -51,32 +69,6 @@ export function QuestionDisplay({ question, autoSpeak = false }: QuestionDisplay
     };
   }, [question.id]);
 
-=======
-export function QuestionDisplay({ question }: QuestionDisplayProps) {
-  const getQuestionTypeLabel = (type?: string) => {
-    switch (type) {
-      case "project":
-        return "Candidate Project Deep Dive";
-      case "candidate_specific":
-        return "Candidate Specific Question";
-      case "yes_no":
-        return "Direct Yes/No Screening";
-      case "behavioral":
-        return "Behavioral Competency (STAR)";
-      case "situational":
-        return "Situational & Crisis Handling";
-      case "problem_solving":
-        return "System & Logic Problem Solving";
-      case "company_oriented":
-        return "Company Alignment & Mission";
-      case "short_answer":
-        return "Quick Technical Check";
-      default:
-        return "Core Technical Question";
-    }
-  };
-
->>>>>>> origin/main
   return (
     <Card className="border-brand-200/70 shadow-card">
       <CardContent className="p-6 sm:p-8 space-y-4">
@@ -96,7 +88,6 @@ export function QuestionDisplay({ question }: QuestionDisplayProps) {
           </div>
 
           <div className="flex items-center gap-2">
-<<<<<<< HEAD
             <button
               type="button"
               onClick={speakQuestion}
@@ -112,17 +103,8 @@ export function QuestionDisplay({ question }: QuestionDisplayProps) {
             </button>
 
             {question.isFollowUp ? (
-              <Badge variant="warning" size="sm" className="gap-1">
-                <CornerDownRight className="w-3 h-3" />
-                Contextual Follow-up
-              </Badge>
-            ) : (
-              <Badge variant="neutral" size="sm">
-                {question.category || "Core Question"}
-=======
-            {question.isFollowUp ? (
               <Badge variant="warning" size="sm" className="gap-1 font-semibold">
-                <CornerDownRight className="w-3.5 h-3.5" />
+                <CornerDownRight className="w-3 h-3" />
                 Adaptive Follow-up
               </Badge>
             ) : (
@@ -135,7 +117,6 @@ export function QuestionDisplay({ question }: QuestionDisplayProps) {
             {question.questionType === "yes_no" && (
               <Badge variant="neutral" size="sm" className="bg-purple-50 text-purple-700 border-purple-200">
                 Yes/No
->>>>>>> origin/main
               </Badge>
             )}
           </div>

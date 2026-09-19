@@ -2,14 +2,14 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
-export interface OptionItem<T extends string> {
+export interface OptionItem<T extends string | number = string> {
   value: T;
   label: string;
   description?: string;
   disabled?: boolean;
 }
 
-interface SelectCardGroupProps<T extends string> {
+interface SelectCardGroupProps<T extends string | number = string> {
   label: string;
   description?: string;
   options: OptionItem<T>[];
@@ -18,7 +18,7 @@ interface SelectCardGroupProps<T extends string> {
   columns?: 2 | 3 | 4;
 }
 
-export function SelectCardGroup<T extends string>({
+export function SelectCardGroup<T extends string | number = string>({
   label,
   description,
   options,
