@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  BookOpen,
   PlayCircle,
   TrendingUp,
   User,
@@ -22,7 +21,6 @@ interface NavigationItem {
 const sidebarNavigation: NavigationItem[] = [
   { name: "Home", href: "/dashboard", icon: Home },
   { name: "Interviews", href: "/interviews", icon: PlayCircle },
-  { name: "Courses", href: "/courses", icon: BookOpen },
   { name: "Performance", href: "/performance", icon: TrendingUp },
   { name: "History", href: "/interviews/history", icon: Sparkles },
   { name: "Profile", href: "/profile", icon: User },
